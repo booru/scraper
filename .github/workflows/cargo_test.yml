@@ -9,28 +9,16 @@ on:
   push:
       branches:
         - main
-      paths:
-        - '**/Cargo.toml'
-        - '**/Cargo.lock'
-        - '**/src'
-        - '**.rs'
-        - '**/.github/**.yml'
   pull_request:
       branches:
         - main
-      paths:
-        - '**/Cargo.toml'
-        - '**/Cargo.lock'
-        - '**/src'
-        - '**.rs'
-        - '**/.github/**.yml'
   release:
     types:
       - created
   schedule:
-    - cron: '17 19 */8 * *'
+    - cron: '17 19 */20 * *'
 
-name: Check Scraper Functionality on Push/PR
+name: Check Scraper Functionality
 
 jobs:
   check:
