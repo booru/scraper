@@ -177,7 +177,13 @@ async fn main_start() -> Result<()> {
         .init();
     tracing::info!("log level is now {}", config.log_level);
     let _sentry = config.sentry_url.as_ref().map(|url| {
-        let name = format!("{}@{}-{}", env!("CARGO_BIN_NAME") ,env!("VERGEN_GIT_SEMVER"), env!("VERGEN_GIT_SHA_SHORT")).into();
+        let name = format!(
+            "{}@{}-{}",
+            env!("CARGO_BIN_NAME"),
+            env!("VERGEN_GIT_SEMVER"),
+            env!("VERGEN_GIT_SHA_SHORT")
+        )
+        .into();
         tracing::info!("Enabling Sentry tracing for {name}");
         let opts = sentry::ClientOptions {
             release: Some(name),

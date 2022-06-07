@@ -84,12 +84,7 @@ async fn get_gt_token(client: &Client, bearer: &str) -> Result<String> {
 }
 
 #[tracing::instrument(skip(client, bearer, gt))]
-async fn make_api_request(
-    client: &Client,
-    url: &str,
-    bearer: &str,
-    gt: &str,
-) -> Result<Value> {
+async fn make_api_request(client: &Client, url: &str, bearer: &str, gt: &str) -> Result<Value> {
     trace!("making api request: {url}");
     let req = client
         .get(url)
