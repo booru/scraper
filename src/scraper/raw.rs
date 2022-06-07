@@ -14,6 +14,7 @@ lazy_static::lazy_static! {
     ]).iter().map(|x| x.to_string()).collect();
 }
 
+#[tracing::instrument(skip(config))]
 pub async fn is_raw(url: &Url, config: &Configuration) -> Result<bool> {
     let client = crate::scraper::client(config)?;
     let res = client.head(url.clone()).send().await?;
@@ -25,6 +26,7 @@ pub async fn is_raw(url: &Url, config: &Configuration) -> Result<bool> {
     }
 }
 
+#[tracing::instrument(skip(config))]
 pub async fn raw_scrape(config: &Configuration, url: &Url) -> Result<Option<ScrapeResult>> {
     Ok(Some(ScrapeResult::Ok(ScrapeResultData {
         source_url: Some(super::from_url(url.clone())),
@@ -44,9 +46,10 @@ mod test {
 
     use super::*;
     use std::str::FromStr;
+    use test_log::test;
+
     #[test]
     fn test_raw_scraper() -> Result<()> {
-        crate::LOGGER.lock().unwrap().flush();
         let url = r#"https://static.manebooru.art/img/view/2021/3/20/4010154.png"#;
         let config = Configuration::default();
         let scrape = tokio_test::block_on(scrape(&config, url));

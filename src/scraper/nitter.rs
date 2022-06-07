@@ -3,9 +3,9 @@ use crate::{scraper::ScrapeImage, Configuration};
 use anyhow::Context;
 use anyhow::Result;
 use lazy_static::lazy_static;
-use log::debug;
 use regex::Regex;
 use std::str::FromStr;
+use tracing::debug;
 use url::Url;
 use visdom::html::ParseOptions;
 use visdom::Vis;
@@ -42,6 +42,7 @@ lazy_static! {
         .expect("failure in setting up essential regex");
 }
 
+#[tracing::instrument]
 pub async fn is_nitter(url: &Url) -> Result<bool> {
     Ok(match url.host_str() {
         None => false,
@@ -50,6 +51,7 @@ pub async fn is_nitter(url: &Url) -> Result<bool> {
         }
     })
 }
+#[tracing::instrument(skip(config))]
 pub async fn nitter_scrape(config: &Configuration, url: &Url) -> Result<Option<ScrapeResult>> {
     let mut url = url.clone();
     let original_url = url.clone();
@@ -137,11 +139,11 @@ mod test {
 
     use super::*;
     use std::str::FromStr;
+    use test_log::test;
 
     #[test]
     #[ignore]
     fn test_nitter_scraper() -> Result<()> {
-        crate::LOGGER.lock().unwrap().flush();
         let host = &crate::scraper::nitter::NITTER_INSTANCES;
         let mut rng = rand::thread_rng();
         let host = &host[rng.gen_range(0..(host.len()))];

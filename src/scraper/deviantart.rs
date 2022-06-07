@@ -6,9 +6,9 @@ use crate::{
 };
 use anyhow::Context;
 use anyhow::Result;
-use log::trace;
 use regex::{Captures, Regex};
 use std::str::FromStr;
+use tracing::trace;
 use url::Url;
 
 lazy_static::lazy_static! {
@@ -21,6 +21,7 @@ lazy_static::lazy_static! {
     static ref JPG_REGEX: Regex = Regex::from_str(r#"(https://[0-9a-z\-\.]+(?:/intermediary)?/f/[0-9a-f\-]+/[0-9a-z\-]+\.jpg/v1/fill/w_[0-9]+,h_[0-9]+,q_)([0-9]+)(,[a-z]+\\/[a-z0-6_\-]+\.jpe?g.*)"#).expect("failure in setting up essential regex");
 }
 
+#[tracing::instrument]
 pub async fn is_deviantart(url: &Url) -> Result<bool> {
     match url.host_str() {
         Some(url) => Ok(url.ends_with(".deviantart.com") || url == "deviantart.com"),
@@ -28,7 +29,7 @@ pub async fn is_deviantart(url: &Url) -> Result<bool> {
     }
 }
 
-//TODO: cache results
+#[tracing::instrument(skip(config))]
 pub async fn deviantart_scrape(config: &Configuration, url: &Url) -> Result<Option<ScrapeResult>> {
     let client = crate::scraper::client(config)?;
     let resp = client
@@ -67,6 +68,7 @@ pub async fn deviantart_scrape(config: &Configuration, url: &Url) -> Result<Opti
     }
 }
 
+#[tracing::instrument(skip(config))]
 async fn extract_data(config: &Configuration, body: &str) -> Result<Option<(ScrapeResult, Url)>> {
     let image = &IMAGE_REGEX.captures(body);
     let image = match image {
@@ -112,6 +114,7 @@ async fn extract_data(config: &Configuration, body: &str) -> Result<Option<(Scra
     )))
 }
 
+#[tracing::instrument(skip(config))]
 async fn try_intermediary_hires(
     config: &Configuration,
     mut images: Vec<ScrapeImage>,
@@ -158,6 +161,7 @@ async fn try_intermediary_hires(
     Ok(images)
 }
 
+#[tracing::instrument]
 async fn try_new_hires(mut images: Vec<ScrapeImage>) -> Result<Vec<ScrapeImage>> {
     for image in images.clone() {
         let old_url = image.url.to_string();
@@ -185,6 +189,7 @@ async fn try_new_hires(mut images: Vec<ScrapeImage>) -> Result<Vec<ScrapeImage>>
     Ok(images)
 }
 
+#[tracing::instrument(skip(config, camo))]
 async fn try_old_hires(
     config: &Configuration,
     source_url: Url,
@@ -240,10 +245,10 @@ mod test {
     use crate::scraper::{scrape, url_to_str};
 
     use super::*;
+    use test_log::test;
 
     #[test]
     fn test_deviantart_scraper() -> Result<()> {
-        crate::LOGGER.lock().unwrap().flush();
         let url = r#"https://www.deviantart.com/the-park/art/Comm-Baseball-cap-derpy-833396912"#;
         let config = Configuration::default();
         let scrape = tokio_test::block_on(scrape(&config, url));

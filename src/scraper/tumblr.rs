@@ -1,6 +1,6 @@
-use log::{debug, trace};
 use reqwest::Client;
 use std::str::FromStr;
+use tracing::{debug, trace};
 
 use crate::{
     camo::camo_url,
@@ -32,6 +32,7 @@ lazy_static::lazy_static! {
     static ref TUMBLR_SIZES: Vec<u64> = vec![1280, 540, 500, 400, 250, 100, 75];
 }
 
+#[tracing::instrument]
 pub async fn is_tumblr(url: &Url) -> Result<bool> {
     if URL_REGEX.is_match_at(url.as_str(), 0) {
         trace!("tumblr matched on regex URL");
@@ -44,6 +45,7 @@ pub async fn is_tumblr(url: &Url) -> Result<bool> {
     })
 }
 
+#[tracing::instrument]
 async fn tumblr_domain(host: url::Host<&str>) -> Result<bool> {
     let hosts = dns_lookup::lookup_host(&host.to_string())?;
     trace!("got hosts for URL: {:?}", hosts);
@@ -56,6 +58,7 @@ async fn tumblr_domain(host: url::Host<&str>) -> Result<bool> {
     Ok(false)
 }
 
+#[tracing::instrument(skip(client))]
 async fn make_tumblr_api_request(client: &Client, api_url: &str) -> Result<Value> {
     debug!("running api request, not in cache");
     client
@@ -70,6 +73,7 @@ async fn make_tumblr_api_request(client: &Client, api_url: &str) -> Result<Value
         .context("could not parse tumblr response as json")
 }
 
+#[tracing::instrument(skip(config))]
 pub async fn tumblr_scrape(config: &Configuration, url: &Url) -> Result<Option<ScrapeResult>> {
     trace!("analyzing tumblr url {}", url);
     let post_id = URL_REGEX.captures(url.as_str());
@@ -130,11 +134,13 @@ pub async fn tumblr_scrape(config: &Configuration, url: &Url) -> Result<Option<S
     }
 }
 
+#[derive(Debug)]
 enum PostType {
     Photo,
     Text,
 }
 
+#[tracing::instrument(skip(config, client))]
 async fn process_post(
     post_type: PostType,
     post: Value,
@@ -147,6 +153,7 @@ async fn process_post(
     }
 }
 
+#[tracing::instrument(skip(config))]
 async fn process_post_text(
     post: Value,
     config: &Configuration,
@@ -181,6 +188,7 @@ async fn process_post_text(
     Ok(Some(meta_images))
 }
 
+#[tracing::instrument(skip(config, client))]
 async fn process_post_photo(
     post: Value,
     config: &Configuration,
@@ -243,6 +251,7 @@ async fn process_post_photo(
     }
 }
 
+#[tracing::instrument]
 async fn add_meta(post: Value, images: Option<Vec<ScrapeImage>>) -> Result<Option<ScrapeResult>> {
     match images {
         None => Ok(None),
@@ -264,6 +273,7 @@ async fn add_meta(post: Value, images: Option<Vec<ScrapeImage>>) -> Result<Optio
     }
 }
 
+#[tracing::instrument(skip(_config, client))]
 async fn upsize(image_url: Value, _config: &Configuration, client: &Client) -> Result<Option<Url>> {
     let image_url = image_url.as_str();
     let image_url = match image_url {
@@ -293,6 +303,7 @@ async fn upsize(image_url: Value, _config: &Configuration, client: &Client) -> R
     }
 }
 
+#[tracing::instrument(skip(client))]
 async fn url_ok(client: &Client, url: &Url) -> Result<bool> {
     let resp = client.head(url.clone()).send().await?;
     trace!("checking url {} for response", url);
@@ -307,16 +318,16 @@ async fn url_ok(client: &Client, url: &Url) -> Result<bool> {
 
 #[cfg(test)]
 mod test {
-    use log::warn;
+    use tracing::warn;
 
     use crate::scraper::scrape;
 
     use super::*;
+    use test_log::test;
 
     #[test]
     #[ignore]
     fn test_tumblr_scraper() -> Result<()> {
-        crate::LOGGER.lock().unwrap().flush();
         let url = r#"https://tcn1205.tumblr.com/post/186904081532/in-wonderland"#;
         let config = Configuration::default();
         let api_key = config.tumblr_api_key.clone().unwrap_or_default();
@@ -352,7 +363,6 @@ mod test {
     #[test]
     #[ignore]
     fn test_text_post_tumblr() -> Result<()> {
-        crate::LOGGER.lock().unwrap().flush();
         let url = r#"https://witchtaunter.tumblr.com/post/182898769998/yes-this-is-horse"#;
         let config = Configuration::default();
         let api_key = config.tumblr_api_key.clone().unwrap_or_default();

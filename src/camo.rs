@@ -3,6 +3,7 @@ use anyhow::Result;
 use camo_url::CamoConfig;
 use url::Url;
 
+#[tracing::instrument(skip(config))]
 pub fn camo_url(config: &Configuration, url: &Url) -> Result<Url> {
     let camo_key = if let Some(key) = config.camo_key.clone() {
         key

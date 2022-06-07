@@ -4,9 +4,9 @@ use crate::scraper::ScrapeResult;
 use crate::scraper::ScrapeResultData;
 use crate::{scraper::ScrapeImage, Configuration};
 use anyhow::{Context, Result};
-use log::trace;
 use regex::Regex;
 use serde_json::Value;
+use tracing::{debug, trace};
 use url::Url;
 
 const ACTIVATION_URL: &str = "https://api.twitter.com/1.1/guest/activate.json";
@@ -20,6 +20,7 @@ lazy_static::lazy_static! {
         .expect("failure in setting up essential regex");
 }
 
+#[tracing::instrument]
 pub async fn is_twitter(url: &Url) -> Result<bool> {
     if URL_REGEX.is_match_at(url.as_str(), 0) {
         return Ok(true);
@@ -27,6 +28,7 @@ pub async fn is_twitter(url: &Url) -> Result<bool> {
     Ok(false)
 }
 
+#[tracing::instrument(skip(client))]
 async fn twitter_page_request(client: &reqwest::Client, page_url: &str) -> Result<String> {
     trace!("making page request: {}", page_url);
     client
@@ -41,6 +43,7 @@ async fn twitter_page_request(client: &reqwest::Client, page_url: &str) -> Resul
         .with_context(|| format!("could not read api data response from {page_url}"))
 }
 
+#[tracing::instrument(skip(client))]
 async fn get_script_data(client: &reqwest::Client, url: &str) -> Result<String> {
     trace!("making script request: {}", url);
     client
@@ -55,6 +58,7 @@ async fn get_script_data(client: &reqwest::Client, url: &str) -> Result<String> 
         .context("could not read script_data response")
 }
 
+#[tracing::instrument(skip(client, bearer))]
 async fn get_gt_token(client: &reqwest::Client, bearer: &str) -> Result<String> {
     trace!("making GT activation request");
     let v = client
@@ -78,6 +82,7 @@ async fn get_gt_token(client: &reqwest::Client, bearer: &str) -> Result<String> 
     }
 }
 
+#[tracing::instrument(skip(client, bearer, gt))]
 async fn make_api_request(
     client: &reqwest::Client,
     url: &str,
@@ -102,6 +107,7 @@ async fn make_api_request(
         .context("response is not valid json")
 }
 
+#[tracing::instrument(skip(config))]
 pub async fn twitter_scrape(config: &Configuration, url: &Url) -> Result<Option<ScrapeResult>> {
     let client = crate::scraper::client(config).context("could not create twitter agent")?;
     let (user, status_id) = {
@@ -129,7 +135,7 @@ pub async fn twitter_scrape(config: &Configuration, url: &Url) -> Result<Option<
             Some(v) => v[1].to_string(),
             None => anyhow::bail!("could not get script"),
         };
-        log::debug!("script_caps: {:?}", script_caps);
+        debug!("script_caps: {:?}", script_caps);
         let script_data = get_script_data(&client, &script_caps)
             .await
             .context("invalid script_data response")?;
@@ -168,7 +174,7 @@ pub async fn twitter_scrape(config: &Configuration, url: &Url) -> Result<Option<
                         url::Url::from_str(url_noorig).unwrap_or_else(|_| page_url.clone());
                     let camo_url: anyhow::Result<Url> = crate::camo::camo_url(config, &url_orig);
                     let camo_url = camo_url.context("could not generate Camo url")?;
-                    log::debug!("urls: {}, noorig: {}", url_orig, url_noorig);
+                    debug!("urls: {}, noorig: {}", url_orig, url_noorig);
                     Ok(ScrapeImage {
                         url: super::from_url(url_noorig),
                         camo_url: super::from_url(camo_url),
@@ -201,12 +207,12 @@ mod test {
     use super::*;
     use crate::scraper::{from_url, scrape};
     use std::str::FromStr;
+    use test_log::test;
 
     //TODO: fix twitter test & scraper
     #[test]
     #[ignore = "twitter is too unstable to test properly atm"]
     fn test_twitter_scraper() -> Result<()> {
-        crate::LOGGER.lock().unwrap().flush();
         let tweet = r#"https://twitter.com/theprincessxena/status/1532144541523910658"#;
         let config = Configuration::default();
         let mut parsed = url::Url::from_str(tweet)?;

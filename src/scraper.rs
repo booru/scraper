@@ -10,8 +10,8 @@ use std::sync::Arc;
 
 use anyhow::{Context, Result};
 use itertools::Itertools;
-use log::debug;
 use serde::{Deserialize, Serialize};
+use tracing::debug;
 #[cfg(test)]
 use visit_diff::Diff;
 
@@ -114,10 +114,12 @@ impl PartialEq for ScrapeImage {
     }
 }
 
+#[tracing::instrument(skip(config))]
 pub fn client(config: &Configuration) -> Result<reqwest::Client> {
     client_with_redir_limit(config, reqwest::redirect::Policy::none())
 }
 
+#[tracing::instrument(skip(config))]
 pub fn client_with_redir_limit(
     config: &Configuration,
     redir_policy: reqwest::redirect::Policy,
@@ -161,51 +163,49 @@ enum Scraper {
 }
 
 impl Scraper {
+    #[tracing::instrument(skip(config))]
     async fn get_scraper(config: &Configuration, url: &url::Url) -> Result<Option<Self>> {
+        use futures::future::FutureExt;
         let (r0, r1, r2, r3, r4, r5, r6) = tokio::try_join!(
-            async {
-                twitter::is_twitter(url)
-                    .await
-                    .map(|mat| if mat { Some(Self::Twitter) } else { None })
-            },
-            async {
-                nitter::is_nitter(url)
-                    .await
-                    .map(|mat| if mat { Some(Self::Nitter) } else { None })
-            },
-            async {
-                tumblr::is_tumblr(url)
-                    .await
-                    .map(|mat| if mat { Some(Self::Tumblr) } else { None })
-            },
-            async {
-                deviantart::is_deviantart(url).await.map(|mat| {
-                    if mat {
-                        Some(Self::DeviantArt)
-                    } else {
-                        None
-                    }
-                })
-            },
-            async {
-                philomena::is_philomena(url).await.map(|mat| {
-                    if mat {
-                        Some(Self::Philomena)
-                    } else {
-                        None
-                    }
-                })
-            },
-            async {
-                buzzly::is_buzzlyart(url)
-                    .await
-                    .map(|mat| if mat { Some(Self::Buzzly) } else { None })
-            },
-            async {
-                raw::is_raw(url, config)
-                    .await
-                    .map(|mat| if mat { Some(Self::Raw) } else { None })
-            },
+            twitter::is_twitter(url).map(|matf| matf.map(|mat| if mat {
+                Some(Self::Twitter)
+            } else {
+                None
+            })),
+            nitter::is_nitter(url).map(|matf| matf.map(|mat| if mat {
+                Some(Self::Nitter)
+            } else {
+                None
+            })),
+            tumblr::is_tumblr(url).map(|matf| matf.map(|mat| if mat {
+                Some(Self::Tumblr)
+            } else {
+                None
+            })),
+            deviantart::is_deviantart(url).map(|matf| matf.map(|mat| {
+                if mat {
+                    Some(Self::DeviantArt)
+                } else {
+                    None
+                }
+            })),
+            philomena::is_philomena(url).map(|matf| matf.map(|mat| {
+                if mat {
+                    Some(Self::Philomena)
+                } else {
+                    None
+                }
+            })),
+            buzzly::is_buzzlyart(url).map(|matf| matf.map(|mat| if mat {
+                Some(Self::Buzzly)
+            } else {
+                None
+            })),
+            raw::is_raw(url, config).map(|matf| matf.map(|mat| if mat {
+                Some(Self::Raw)
+            } else {
+                None
+            })),
         )?;
         let res = vec![r0, r1, r2, r3, r4, r5, r6];
         let res: Vec<Scraper> = res.into_iter().flatten().collect_vec();
@@ -222,6 +222,7 @@ impl Scraper {
         })
     }
 
+    #[tracing::instrument(skip(config))]
     async fn execute_scrape(
         self,
         config: &Configuration,
@@ -253,6 +254,7 @@ impl Scraper {
     }
 }
 
+#[tracing::instrument(skip(config))]
 pub async fn scrape(config: &Configuration, url: &str) -> Result<Option<ScrapeResult>> {
     use std::str::FromStr;
     let url = url::Url::from_str(url).context("could not parse URL for scraper")?;

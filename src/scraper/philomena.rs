@@ -7,10 +7,11 @@ use crate::scraper::philomena::derpibooru::is_derpibooru;
 use crate::scraper::{from_url, ScrapeImage, ScrapeResult, ScrapeResultData};
 use crate::Configuration;
 use anyhow::{Context, Result};
-use log::{debug, trace};
+use tracing::{debug, trace};
 
 mod derpibooru;
 
+#[tracing::instrument]
 pub async fn is_philomena(url: &Url) -> Result<bool> {
     is_derpibooru(url).await
 }
@@ -29,6 +30,7 @@ struct PhilomenaApiImageResponse {
     view_url: String,
 }
 
+#[tracing::instrument(skip(config))]
 pub async fn philomena_scrape(config: &Configuration, url: &Url) -> Result<Option<ScrapeResult>> {
     trace!("converting philo url to api url");
     let api_url = if is_derpibooru(url).await? {
@@ -79,6 +81,7 @@ pub async fn philomena_scrape(config: &Configuration, url: &Url) -> Result<Optio
     })))
 }
 
+#[tracing::instrument(skip(client))]
 async fn make_philomena_api_request(
     client: &Client,
     api_url: &str,
@@ -101,10 +104,10 @@ mod test {
     use crate::scraper::{scrape, ScrapeResultData};
 
     use super::*;
+    use test_log::test;
 
     #[test]
     fn test_derpibooru_scraper() -> Result<()> {
-        crate::LOGGER.lock().unwrap().flush();
         let urls = vec![
             (
                 r#"https://derpibooru.org/images/1426211"#,

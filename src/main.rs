@@ -3,10 +3,7 @@ use std::sync::Arc;
 use anyhow::Result;
 use axum::{routing::get, Extension};
 use envconfig::Envconfig;
-use flexi_logger::LoggerHandle;
-use lazy_static::lazy_static;
-use log::{info, trace, LevelFilter};
-use std::sync::Mutex;
+use tracing::{info, trace, Level};
 
 mod camo;
 mod scraper;
@@ -14,7 +11,7 @@ mod web;
 
 #[derive(Envconfig, Clone, securefmt::Debug)]
 pub struct Configuration {
-    #[envconfig(from = "LISTEN_ON", default = "localhost:8080")]
+    #[envconfig(from = "LISTEN_ON", default = "127.0.0.1:8080")]
     #[sensitive]
     bind_to: std::net::SocketAddr,
     #[envconfig(from = "ALLOWED_ORIGINS", default = "localhost,localhost:8080")]
@@ -38,9 +35,11 @@ pub struct Configuration {
     #[envconfig(from = "PREFERRED_NITTER_INSTANCE_HOST")]
     preferred_nitter_instance_host: Option<String>,
     #[envconfig(from = "LOG_LEVEL", default = "INFO")]
-    log_level: LevelFilter,
+    log_level: Level,
     #[envconfig(from = "ALLOW_EMPTY_ORIGIN", default = "false")]
     allow_empty_origin: bool,
+    #[envconfig(from = "SENTRY_URL")]
+    sentry_url: Option<url::Url>,
 }
 
 #[derive(Clone)]
@@ -101,8 +100,9 @@ impl Default for Configuration {
             camo_key: None,
             enable_get_request: false,
             preferred_nitter_instance_host: None,
-            log_level: LevelFilter::Info,
+            log_level: Level::INFO,
             allow_empty_origin: false,
+            sentry_url: None,
         };
         trace!("created config: {:?}", s);
         s
@@ -110,16 +110,19 @@ impl Default for Configuration {
 }
 
 fn main() -> Result<()> {
-    crate::LOGGER.lock().unwrap().flush();
+    better_panic::install();
+    if let Err(e) = kankyo::load(false) {
+        info!("couldn't load .env file: {}, this is probably fine", e);
+    }
     use tokio::runtime::Builder;
     let runtime = Builder::new_multi_thread()
         .worker_threads(16)
         .max_blocking_threads(64)
         .on_thread_stop(|| {
-            log::trace!("thread stopping");
+            tracing::trace!("thread stopping");
         })
         .on_thread_start(|| {
-            log::trace!("thread started");
+            tracing::trace!("thread started");
         })
         .thread_name_fn(|| {
             use std::sync::atomic::{AtomicUsize, Ordering};
@@ -139,18 +142,31 @@ async fn main_start() -> Result<()> {
     let config = Configuration::init_from_env();
     let config = match config {
         Err(e) => {
-            log::error!("could not load config: {}", e);
+            tracing::error!("could not load config: {}", e);
             Configuration::default()
         }
         Ok(v) => v,
     };
-    log::info!("log level is now {}", config.log_level);
-    LOGGER.lock().unwrap().set_new_spec(
-        flexi_logger::LogSpecification::builder()
-            .default(LevelFilter::Info)
-            .module("scraper", config.log_level)
-            .build(),
+    use tracing_subscriber::prelude::*;
+    let fmt_layer = tracing_subscriber::fmt::layer().with_filter(
+        tracing_subscriber::filter::LevelFilter::from_level(config.log_level),
     );
+    tracing_subscriber::Registry::default()
+        .with(sentry::integrations::tracing::layer())
+        .with(fmt_layer)
+        .init();
+    tracing::info!("log level is now {}", config.log_level);
+    let _sentry = config.sentry_url.as_ref().map(|url| {
+        tracing::info!("Enabling Sentry tracing");
+        sentry::init((
+            url.to_string(),
+            sentry::ClientOptions {
+                release: sentry::release_name!(),
+                traces_sample_rate: 1.0,
+                ..Default::default()
+            },
+        ))
+    });
     let state = Arc::new(State::new(config.clone())?);
     let app = axum::Router::new()
         .route("/images/scrape", get(web::scrape).post(web::scrape_post))
@@ -160,28 +176,20 @@ async fn main_start() -> Result<()> {
             web::origin_check(a, state, b)
         }))
         .layer(axum::middleware::from_fn(web::latency));
+    let app = match config.sentry_url {
+        None => app,
+        Some(ref _v) => app
+            .layer(sentry_tower::NewSentryLayer::new_from_top())
+            .layer(sentry_tower::SentryHttpLayer::with_transaction()),
+    };
     axum::Server::bind(&config.bind_to)
         .serve(app.into_make_service())
         .await
         .unwrap();
+    // close sentry
+    if let Some(s) = _sentry.as_ref() {
+        s.flush(Some(std::time::Duration::from_millis(5000)));
+    }
+    drop(_sentry);
     Ok(())
-}
-
-lazy_static! {
-    static ref LOGGER: Mutex<LoggerHandle> = {
-        better_panic::install();
-        if let Err(e) = kankyo::load(false) {
-            info!("couldn't load .env file: {}, this is probably fine", e);
-        }
-        Mutex::new(
-            flexi_logger::Logger::with(
-                flexi_logger::LogSpecification::builder()
-                    .default(LevelFilter::Debug)
-                    .module("scraper", LevelFilter::Debug)
-                    .build(),
-            )
-            .start()
-            .unwrap(),
-        )
-    };
 }

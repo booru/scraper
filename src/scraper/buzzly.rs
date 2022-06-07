@@ -3,9 +3,9 @@ use std::str::FromStr;
 
 use anyhow::Result;
 use graphql_client::{GraphQLQuery, Response};
-use log::*;
 use regex::Regex;
 use reqwest::{Client, Url};
+use tracing::*;
 
 use crate::camo::camo_url;
 use crate::scraper::{from_url, ScrapeImage, ScrapeResult, ScrapeResultData};
@@ -23,6 +23,7 @@ lazy_static::lazy_static! {
 )]
 pub struct GetSubmission;
 
+#[tracing::instrument]
 pub async fn is_buzzlyart(url: &Url) -> Result<bool> {
     trace!("buzzly on {:?}?", url.as_str());
     if URL_REGEX.is_match_at(url.as_str(), 0) {
@@ -32,6 +33,7 @@ pub async fn is_buzzlyart(url: &Url) -> Result<bool> {
     Ok(false)
 }
 
+#[tracing::instrument]
 pub async fn make_buzzly_doc_request(
     client: &Client,
     slug: &str,
@@ -63,6 +65,7 @@ pub async fn make_buzzly_doc_request(
     Ok(r.data.expect("missing response data"))
 }
 
+#[tracing::instrument(skip(config))]
 pub async fn buzzlyart_scrape(config: &Configuration, url: &Url) -> Result<Option<ScrapeResult>> {
     trace!("loading buzzly");
     let origin_url = url;
@@ -115,11 +118,11 @@ mod test {
     use crate::scraper::{scrape, ScrapeResultData};
 
     use super::*;
+    use test_log::test;
 
     #[test]
     #[ignore = "buzzly is not supported anymore"]
     fn test_buzzlyart_scraper() -> Result<()> {
-        crate::LOGGER.lock().unwrap().flush();
         let url = r#"https://buzzly.art/~mothnmag/art/fizzy"#;
         let config = Configuration::default();
         let scrape = tokio_test::block_on(scrape(&config, url))?.unwrap();

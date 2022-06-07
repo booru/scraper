@@ -6,22 +6,23 @@ use axum::{
     response::{self, IntoResponse},
     Extension, Json,
 };
-use log::debug;
 use std::sync::Arc;
 use tokio::time::Instant;
+use tracing::debug;
 
 use crate::{
     scraper::{self, ScrapeResult},
     Configuration, ResultCache, State,
 };
 
-#[derive(serde::Deserialize, Clone)]
+#[derive(serde::Deserialize, Clone, Debug)]
 pub struct ScrapeRequest {
     url: String,
     #[serde(alias = "_method")]
     _method: Option<String>,
 }
 
+#[tracing::instrument(skip(req, next))]
 pub async fn latency<B>(req: Request<B>, next: Next<B>) -> impl IntoResponse {
     let uri = req.uri().clone();
     debug!("Incoming Request {}", uri);
@@ -42,6 +43,7 @@ pub async fn latency<B>(req: Request<B>, next: Next<B>) -> impl IntoResponse {
     res
 }
 
+#[tracing::instrument(skip(req, state, next))]
 pub async fn origin_check<B>(
     req: Request<B>,
     state: Arc<State>,
@@ -60,6 +62,7 @@ pub async fn origin_check<B>(
     }
 }
 
+#[tracing::instrument(skip(state))]
 pub async fn scrape_post(
     Json(scrape_req): Json<ScrapeRequest>,
     Extension(state): Extension<Arc<State>>,
@@ -70,6 +73,7 @@ pub async fn scrape_post(
     }
 }
 
+#[tracing::instrument(skip(state))]
 pub async fn scrape(
     Query(scrape_req): Query<ScrapeRequest>,
     Extension(state): Extension<Arc<State>>,
@@ -80,6 +84,7 @@ pub async fn scrape(
     }
 }
 
+#[tracing::instrument(skip(request_cache, config))]
 pub async fn scrape_inner(
     config: &Configuration,
     request_cache: ResultCache,

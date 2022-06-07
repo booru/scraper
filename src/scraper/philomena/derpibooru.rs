@@ -1,14 +1,15 @@
 use std::str::FromStr;
 
 use anyhow::Result;
-use log::trace;
 use regex::Regex;
 use reqwest::Url;
+use tracing::trace;
 
 lazy_static::lazy_static! {
     static ref URL_REGEX: Regex = Regex::from_str(r#"^https://derpibooru.org/(images/)?(?P<image_id>\d+).*$"#).expect("failure in setting up essential regex");
 }
 
+#[tracing::instrument]
 pub async fn is_derpibooru(url: &Url) -> Result<bool> {
     if URL_REGEX.is_match(url.as_str()) {
         trace!("derpibooru matched on URL pattern 1");
@@ -18,6 +19,7 @@ pub async fn is_derpibooru(url: &Url) -> Result<bool> {
     Ok(false)
 }
 
+#[tracing::instrument]
 pub fn url_to_api(url: &Url) -> Result<Option<Url>> {
     if let Some(cap) = URL_REGEX.captures(url.as_str()) {
         match cap.name("image_id") {
