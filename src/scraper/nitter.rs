@@ -136,6 +136,7 @@ mod test {
     use rand::Rng;
 
     use crate::scraper::{from_url, scrape};
+    use crate::State;
 
     use super::*;
     use std::str::FromStr;
@@ -152,8 +153,8 @@ mod test {
             host
         );
         let config = Configuration::default();
-
-        let scrape = tokio_test::block_on(scrape(&config, &tweet))?.unwrap();
+        let state = State::new(config.clone())?;
+        let scrape = tokio_test::block_on(scrape(&config, &state, &tweet))?.unwrap();
         visit_diff::assert_eq_diff!(ScrapeResult::Ok(ScrapeResultData{
             source_url: Some(from_url(url::Url::from_str(r#"https://twitter.com/TheOnion/status/1372594920427491335?s=20"#)?)),
             author_name: Some("TheOnion".to_string()),

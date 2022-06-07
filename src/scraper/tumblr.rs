@@ -2,6 +2,7 @@ use reqwest::Client;
 use std::str::FromStr;
 use tracing::{debug, trace};
 
+use crate::TumblrDnsCache;
 use crate::{
     camo::camo_url,
     scraper::{from_url, ScrapeImage, ScrapeResult, ScrapeResultData},
@@ -33,29 +34,37 @@ lazy_static::lazy_static! {
 }
 
 #[tracing::instrument]
-pub async fn is_tumblr(url: &Url) -> Result<bool> {
+pub async fn is_tumblr(dns_cache: TumblrDnsCache, url: &Url) -> Result<bool> {
     if URL_REGEX.is_match_at(url.as_str(), 0) {
         trace!("tumblr matched on regex URL");
         return Ok(true);
     }
     trace!("tumblr didn't match on regex, trying host resolver");
     Ok(match url.host() {
-        Some(host) => tumblr_domain(host).await?,
+        Some(host) => tumblr_domain(dns_cache, host).await?,
         None => false,
     })
 }
 
 #[tracing::instrument]
-async fn tumblr_domain(host: url::Host<&str>) -> Result<bool> {
-    let hosts = dns_lookup::lookup_host(&host.to_string())?;
-    trace!("got hosts for URL: {:?}", hosts);
-    for host in hosts {
-        if TUMBLR_RANGES.iter().any(|net| net.contains(&host)) {
-            return Ok(true);
-        }
-    }
-    trace!("host not in URL list");
-    Ok(false)
+async fn tumblr_domain(dns_cache: TumblrDnsCache, host: url::Host<&str>) -> Result<bool> {
+    let host = host.to_string();
+    let r = dns_cache
+        .try_get_with::<_, anyhow::Error>(host.clone(), async move {
+            let host = host.clone();
+            let hosts =
+                tokio::task::spawn_blocking(move || dns_lookup::lookup_host(&host)).await??;
+            trace!("got hosts for URL: {:?}", hosts);
+            for host in hosts {
+                if TUMBLR_RANGES.iter().any(|net| net.contains(&host)) {
+                    return Ok(true);
+                }
+            }
+            trace!("host not in URL list");
+            Ok(false)
+        })
+        .await;
+    r.map_err(|e| anyhow::format_err!("{:?}", e))
 }
 
 #[tracing::instrument(skip(client))]
@@ -321,6 +330,7 @@ mod test {
     use tracing::warn;
 
     use crate::scraper::scrape;
+    use crate::State;
 
     use super::*;
     use test_log::test;
@@ -330,12 +340,13 @@ mod test {
     fn test_tumblr_scraper() -> Result<()> {
         let url = r#"https://tcn1205.tumblr.com/post/186904081532/in-wonderland"#;
         let config = Configuration::default();
+        let state = State::new(config.clone())?;
         let api_key = config.tumblr_api_key.clone().unwrap_or_default();
         if config.tumblr_api_key.is_none() && api_key.trim().is_empty() {
             warn!("Tumblr API key not configured, skipping");
             return Ok(());
         }
-        let scrape = tokio_test::block_on(scrape(&config, url));
+        let scrape = tokio_test::block_on(scrape(&config, &state, url));
         let scrape = match scrape {
             Ok(s) => s,
             Err(e) => return Err(e),
@@ -365,12 +376,13 @@ mod test {
     fn test_text_post_tumblr() -> Result<()> {
         let url = r#"https://witchtaunter.tumblr.com/post/182898769998/yes-this-is-horse"#;
         let config = Configuration::default();
+        let state = State::new(config.clone())?;
         let api_key = config.tumblr_api_key.clone().unwrap_or_default();
         if config.tumblr_api_key.is_none() && api_key.trim().is_empty() {
             warn!("Tumblr API key not configured, skipping");
             return Ok(());
         }
-        let scrape = tokio_test::block_on(scrape(&config, url));
+        let scrape = tokio_test::block_on(scrape(&config, &state, url));
         let scrape = match scrape {
             Ok(s) => s,
             Err(e) => return Err(e),

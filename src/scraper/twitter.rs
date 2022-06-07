@@ -206,6 +206,7 @@ mod test {
 
     use super::*;
     use crate::scraper::{from_url, scrape};
+    use crate::State;
     use std::str::FromStr;
     use test_log::test;
 
@@ -215,10 +216,11 @@ mod test {
     fn test_twitter_scraper() -> Result<()> {
         let tweet = r#"https://twitter.com/theprincessxena/status/1532144541523910658"#;
         let config = Configuration::default();
+        let state = State::new(config.clone())?;
         let mut parsed = url::Url::from_str(tweet)?;
         parsed.set_fragment(None);
         parsed.set_query(None);
-        let scrape = tokio_test::block_on(scrape(&config, tweet));
+        let scrape = tokio_test::block_on(scrape(&config, &state, tweet));
         let scrape = match scrape {
             Ok(s) => s,
             Err(e) => return Err(e),

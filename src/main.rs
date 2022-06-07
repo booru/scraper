@@ -47,9 +47,11 @@ pub struct State {
     config: Configuration,
     parsed_allowed_origins: Vec<String>,
     result_cache: ResultCache,
+    tumblr_dns_cache: TumblrDnsCache,
 }
 
 pub type ResultCache = moka::future::Cache<String, Option<scraper::ScrapeResult>>;
+pub type TumblrDnsCache = moka::future::Cache<String, bool>;
 
 impl State {
     fn new(config: Configuration) -> Result<Self> {
@@ -62,6 +64,12 @@ impl State {
                 .collect(),
             config,
             result_cache: moka::future::CacheBuilder::new(1000)
+                .initial_capacity(1000)
+                .support_invalidation_closures()
+                .time_to_idle(std::time::Duration::from_secs(10 * 60))
+                .time_to_live(std::time::Duration::from_secs(100 * 60))
+                .build(),
+            tumblr_dns_cache: moka::future::CacheBuilder::new(1000)
                 .initial_capacity(1000)
                 .support_invalidation_closures()
                 .time_to_idle(std::time::Duration::from_secs(10 * 60))
@@ -158,14 +166,12 @@ async fn main_start() -> Result<()> {
     tracing::info!("log level is now {}", config.log_level);
     let _sentry = config.sentry_url.as_ref().map(|url| {
         tracing::info!("Enabling Sentry tracing");
-        sentry::init((
-            url.to_string(),
-            sentry::ClientOptions {
-                release: sentry::release_name!(),
-                traces_sample_rate: 1.0,
-                ..Default::default()
-            },
-        ))
+        let opts = sentry::ClientOptions {
+            release: sentry::release_name!(),
+            traces_sample_rate: 1.0,
+            ..Default::default()
+        };
+        sentry::init((url.to_string(), opts))
     });
     let state = Arc::new(State::new(config.clone())?);
     let app = axum::Router::new()

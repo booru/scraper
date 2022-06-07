@@ -1,3 +1,7 @@
+use crate::{
+    scraper::{self, ScrapeResult},
+    Configuration, ResultCache, State,
+};
 use anyhow::Result;
 use axum::{
     extract::Query,
@@ -9,11 +13,6 @@ use axum::{
 use std::sync::Arc;
 use tokio::time::Instant;
 use tracing::debug;
-
-use crate::{
-    scraper::{self, ScrapeResult},
-    Configuration, ResultCache, State,
-};
 
 #[derive(serde::Deserialize, Clone, Debug)]
 pub struct ScrapeRequest {
@@ -67,7 +66,14 @@ pub async fn scrape_post(
     Json(scrape_req): Json<ScrapeRequest>,
     Extension(state): Extension<Arc<State>>,
 ) -> response::Response<String> {
-    match scrape_inner(&state.config, state.result_cache.clone(), scrape_req).await {
+    match scrape_inner(
+        &state.config,
+        state.result_cache.clone(),
+        &state.clone(),
+        scrape_req,
+    )
+    .await
+    {
         Ok(v) => v,
         Err(_) => todo!(),
     }
@@ -78,21 +84,29 @@ pub async fn scrape(
     Query(scrape_req): Query<ScrapeRequest>,
     Extension(state): Extension<Arc<State>>,
 ) -> response::Response<String> {
-    match scrape_inner(&state.config, state.result_cache.clone(), scrape_req).await {
+    match scrape_inner(
+        &state.config,
+        state.result_cache.clone(),
+        &state.clone(),
+        scrape_req,
+    )
+    .await
+    {
         Ok(v) => v,
         Err(_) => todo!(),
     }
 }
 
-#[tracing::instrument(skip(request_cache, config))]
+#[tracing::instrument(skip(request_cache, state, config))]
 pub async fn scrape_inner(
     config: &Configuration,
     request_cache: ResultCache,
+    state: &State,
     scrape_req: ScrapeRequest,
 ) -> Result<response::Response<String>> {
     let url = scrape_req.url.clone();
     let res: std::result::Result<Option<ScrapeResult>, Arc<anyhow::Error>> = request_cache
-        .try_get_with(scrape_req.url, scraper::scrape(config, &url))
+        .try_get_with(scrape_req.url, scraper::scrape(config, state, &url))
         .await;
     let res = match res {
         Ok(r) => r,

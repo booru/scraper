@@ -43,6 +43,7 @@ pub async fn raw_scrape(config: &Configuration, url: &Url) -> Result<Option<Scra
 #[cfg(test)]
 mod test {
     use crate::scraper::{from_url, scrape};
+    use crate::State;
 
     use super::*;
     use std::str::FromStr;
@@ -52,7 +53,8 @@ mod test {
     fn test_raw_scraper() -> Result<()> {
         let url = r#"https://static.manebooru.art/img/view/2021/3/20/4010154.png"#;
         let config = Configuration::default();
-        let scrape = tokio_test::block_on(scrape(&config, url));
+        let state = State::new(config.clone())?;
+        let scrape = tokio_test::block_on(scrape(&config, &state, url));
         let scrape = match scrape {
             Ok(s) => s,
             Err(e) => return Err(e),

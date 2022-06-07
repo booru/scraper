@@ -243,6 +243,7 @@ async fn try_old_hires(
 mod test {
 
     use crate::scraper::{scrape, url_to_str};
+    use crate::State;
 
     use super::*;
     use test_log::test;
@@ -251,7 +252,8 @@ mod test {
     fn test_deviantart_scraper() -> Result<()> {
         let url = r#"https://www.deviantart.com/the-park/art/Comm-Baseball-cap-derpy-833396912"#;
         let config = Configuration::default();
-        let scrape = tokio_test::block_on(scrape(&config, url));
+        let state = State::new(config.clone())?;
+        let scrape = tokio_test::block_on(scrape(&config, &state, url));
         let scrape = match scrape {
             Ok(s) => s,
             Err(e) => return Err(e),

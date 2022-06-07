@@ -102,6 +102,7 @@ async fn make_philomena_api_request(
 #[cfg(test)]
 mod test {
     use crate::scraper::{scrape, ScrapeResultData};
+    use crate::State;
 
     use super::*;
     use test_log::test;
@@ -186,8 +187,9 @@ mod test {
             )
         ];
         let config = Configuration::default();
+        let state = State::new(config.clone())?;
         for url in urls {
-            let scrape = tokio_test::block_on(scrape(&config, url.0));
+            let scrape = tokio_test::block_on(scrape(&config, &state, url.0));
             let scrape = match scrape {
                 Ok(s) => s,
                 Err(e) => return Err(e),

@@ -116,6 +116,7 @@ pub async fn buzzlyart_scrape(config: &Configuration, url: &Url) -> Result<Optio
 #[cfg(test)]
 mod test {
     use crate::scraper::{scrape, ScrapeResultData};
+    use crate::State;
 
     use super::*;
     use test_log::test;
@@ -125,7 +126,8 @@ mod test {
     fn test_buzzlyart_scraper() -> Result<()> {
         let url = r#"https://buzzly.art/~mothnmag/art/fizzy"#;
         let config = Configuration::default();
-        let scrape = tokio_test::block_on(scrape(&config, url))?.unwrap();
+        let state = State::new(config.clone())?;
+        let scrape = tokio_test::block_on(scrape(&config, &state, url))?.unwrap();
 
         visit_diff::assert_eq_diff!(ScrapeResult::Ok(ScrapeResultData{
             source_url: Some(
