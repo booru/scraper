@@ -40,6 +40,14 @@ pub struct Configuration {
     allow_empty_origin: bool,
     #[envconfig(from = "SENTRY_URL")]
     sentry_url: Option<url::Url>,
+    #[envconfig(from = "TWITTER_USE_V2", default = "false")]
+    twitter_use_v2: bool,
+    #[envconfig(from = "TWITTER_API_KEY")]
+    twitter_api_key: Option<String>,
+    #[envconfig(from = "TWITTER_API_KEY_SECRET")]
+    twitter_api_key_secret: Option<String>,
+    #[envconfig(from = "TWITTER_API_BEARER")]
+    twitter_api_key_bearer: Option<String>,
 }
 
 #[derive(Clone)]
@@ -111,6 +119,10 @@ impl Default for Configuration {
             log_level: Level::INFO,
             allow_empty_origin: false,
             sentry_url: None,
+            twitter_use_v2: false,
+            twitter_api_key: None,
+            twitter_api_key_bearer: None,
+            twitter_api_key_secret: None,
         };
         trace!("created config: {:?}", s);
         s
@@ -165,9 +177,10 @@ async fn main_start() -> Result<()> {
         .init();
     tracing::info!("log level is now {}", config.log_level);
     let _sentry = config.sentry_url.as_ref().map(|url| {
-        tracing::info!("Enabling Sentry tracing");
+        let name = format!("{}@{}-{}", env!("CARGO_BIN_NAME") ,env!("VERGEN_GIT_SEMVER"), env!("VERGEN_GIT_SHA_SHORT")).into();
+        tracing::info!("Enabling Sentry tracing for {name}");
         let opts = sentry::ClientOptions {
-            release: sentry::release_name!(),
+            release: Some(name),
             traces_sample_rate: 1.0,
             ..Default::default()
         };

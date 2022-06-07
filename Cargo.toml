@@ -1,6 +1,6 @@
 [package]
 name = "scraper"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Cult Pony"]
 edition = "2018"
 license = "AGPL-3.0"
@@ -36,6 +36,9 @@ tracing-subscriber = "0.3.11"
 sentry = { version = "0.26.0", features = ["tracing", "anyhow"] }
 sentry-tower = { version = "0.26.0", features = ["http"] }
 futures = "0.3.21"
+reqwest-middleware = "0.1.1"
+reqwest-tracing = "0.2.0"
+twitter-v2 = "0.1.5"
 
 [dev-dependencies]
 tokio-test = "0.4"
@@ -43,6 +46,10 @@ visit_diff = "0.1"
 rand = "0.8.5"
 test-log = "0.2.10"
 env_logger = "*"
+
+[build-dependencies]
+anyhow = "1.0"
+vergen = "7.2.1"
 
 [profile.release]
 opt-level = 3

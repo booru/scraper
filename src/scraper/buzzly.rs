@@ -4,7 +4,8 @@ use std::str::FromStr;
 use anyhow::Result;
 use graphql_client::{GraphQLQuery, Response};
 use regex::Regex;
-use reqwest::{Client, Url};
+use reqwest::Url;
+use reqwest_middleware::ClientWithMiddleware as Client;
 use tracing::*;
 
 use crate::camo::camo_url;

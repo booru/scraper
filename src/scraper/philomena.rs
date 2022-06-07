@@ -1,6 +1,7 @@
 use std::str::FromStr;
 
-use reqwest::{Client, Url};
+use reqwest::Url;
+use reqwest_middleware::ClientWithMiddleware as Client;
 
 use crate::camo::camo_url;
 use crate::scraper::philomena::derpibooru::is_derpibooru;

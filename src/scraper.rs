@@ -5,6 +5,7 @@ mod philomena;
 mod raw;
 mod tumblr;
 mod twitter;
+mod twitterv2;
 
 use std::sync::Arc;
 
@@ -116,7 +117,7 @@ impl PartialEq for ScrapeImage {
 }
 
 #[tracing::instrument(skip(config))]
-pub fn client(config: &Configuration) -> Result<reqwest::Client> {
+pub fn client(config: &Configuration) -> Result<reqwest_middleware::ClientWithMiddleware> {
     client_with_redir_limit(config, reqwest::redirect::Policy::none())
 }
 
@@ -124,7 +125,7 @@ pub fn client(config: &Configuration) -> Result<reqwest::Client> {
 pub fn client_with_redir_limit(
     config: &Configuration,
     redir_policy: reqwest::redirect::Policy,
-) -> Result<reqwest::Client> {
+) -> Result<reqwest_middleware::ClientWithMiddleware> {
     let client = reqwest::Client::builder()
         .timeout(std::time::Duration::from_millis(5000))
         .connect_timeout(std::time::Duration::from_millis(2500))
@@ -149,7 +150,10 @@ pub fn client_with_redir_limit(
             client.proxy(proxy)
         }
     };
-    Ok(client.build()?)
+    Ok(reqwest_middleware::ClientBuilder::new(client.build()?)
+        .with(reqwest_tracing::TracingMiddleware)
+        .build())
+    //Ok(client.build()?)
 }
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]

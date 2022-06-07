@@ -5,6 +5,7 @@ use crate::scraper::ScrapeResultData;
 use crate::{scraper::ScrapeImage, Configuration};
 use anyhow::{Context, Result};
 use regex::Regex;
+use reqwest_middleware::ClientWithMiddleware as Client;
 use serde_json::Value;
 use tracing::{debug, trace};
 use url::Url;
@@ -12,7 +13,7 @@ use url::Url;
 const ACTIVATION_URL: &str = "https://api.twitter.com/1.1/guest/activate.json";
 
 lazy_static::lazy_static! {
-    static ref URL_REGEX: Regex = Regex::from_str(r#"\Ahttps?://(?:mobile\.)?twitter.com/([A-Za-z\d_]+)/status/([\d]+)/?"#)
+    pub static ref URL_REGEX: Regex = Regex::from_str(r#"\Ahttps?://(?:mobile\.)?twitter.com/([A-Za-z\d_]+)/status/([\d]+)/?"#)
         .expect("failure in setting up essential regex");
     static ref SCRIPT_REGEX: Regex = Regex::from_str(r#"="(https://abs.twimg.com/responsive-web/client-web(?:-legacy)?/main\.[\da-z]+\.js)"#)
         .expect("failure in setting up essential regex");
@@ -29,7 +30,7 @@ pub async fn is_twitter(url: &Url) -> Result<bool> {
 }
 
 #[tracing::instrument(skip(client))]
-async fn twitter_page_request(client: &reqwest::Client, page_url: &str) -> Result<String> {
+async fn twitter_page_request(client: &Client, page_url: &str) -> Result<String> {
     trace!("making page request: {}", page_url);
     client
         .get(page_url)
@@ -44,7 +45,7 @@ async fn twitter_page_request(client: &reqwest::Client, page_url: &str) -> Resul
 }
 
 #[tracing::instrument(skip(client))]
-async fn get_script_data(client: &reqwest::Client, url: &str) -> Result<String> {
+async fn get_script_data(client: &Client, url: &str) -> Result<String> {
     trace!("making script request: {}", url);
     client
         .get(url)
@@ -59,7 +60,7 @@ async fn get_script_data(client: &reqwest::Client, url: &str) -> Result<String> 
 }
 
 #[tracing::instrument(skip(client, bearer))]
-async fn get_gt_token(client: &reqwest::Client, bearer: &str) -> Result<String> {
+async fn get_gt_token(client: &Client, bearer: &str) -> Result<String> {
     trace!("making GT activation request");
     let v = client
         .post(ACTIVATION_URL.to_string())
@@ -84,7 +85,7 @@ async fn get_gt_token(client: &reqwest::Client, bearer: &str) -> Result<String> 
 
 #[tracing::instrument(skip(client, bearer, gt))]
 async fn make_api_request(
-    client: &reqwest::Client,
+    client: &Client,
     url: &str,
     bearer: &str,
     gt: &str,
@@ -109,6 +110,9 @@ async fn make_api_request(
 
 #[tracing::instrument(skip(config))]
 pub async fn twitter_scrape(config: &Configuration, url: &Url) -> Result<Option<ScrapeResult>> {
+    if config.twitter_use_v2 {
+        return crate::scraper::twitterv2::twitter_v2_scrape(config, url).await;
+    }
     let client = crate::scraper::client(config).context("could not create twitter agent")?;
     let (user, status_id) = {
         let caps = URL_REGEX.captures(url.as_str());
