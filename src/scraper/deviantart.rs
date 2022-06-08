@@ -30,13 +30,18 @@ pub async fn is_deviantart(url: &Url) -> Result<bool> {
 }
 
 #[tracing::instrument(skip(config))]
-pub async fn deviantart_scrape(config: &Configuration, url: &Url) -> Result<Option<ScrapeResult>> {
+pub async fn get_deviantart_page(config: &Configuration, url: &Url) -> Result<reqwest::Response> {
     let client = crate::scraper::client(config)?;
-    let resp = client
+    Ok(client
         .get(url.to_owned())
         .send()
         .await
-        .context("image request failed")?;
+        .context("image request failed")?)
+}
+
+#[tracing::instrument(skip(config))]
+pub async fn deviantart_scrape(config: &Configuration, url: &Url) -> Result<Option<ScrapeResult>> {
+    let resp = get_deviantart_page(config, url).await?;
     let body = resp.text().await.context("could not read response")?;
     let extract_data = extract_data(config, &body)
         .await
