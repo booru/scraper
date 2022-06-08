@@ -175,7 +175,7 @@ impl Scraper {
         url: &url::Url,
     ) -> Result<Option<Self>> {
         use futures::future::FutureExt;
-        let (r0, r1, r2, r3, r4, r5, r6) =
+        let (r0, r1, r2, r3, r4, r5) =
             tokio::try_join!(
                 twitter::is_twitter(url).map(|matf| matf.map(|mat| if mat {
                     Some(Self::Twitter)
@@ -208,16 +208,16 @@ impl Scraper {
                 } else {
                     None
                 })),
-                raw::is_raw(url, config).map(|matf| matf.map(|mat| if mat {
-                    Some(Self::Raw)
-                } else {
-                    None
-                })),
             )?;
-        let res = vec![r0, r1, r2, r3, r4, r5, r6];
+        let res = vec![r0, r1, r2, r3, r4, r5];
         let res: Vec<Scraper> = res.into_iter().flatten().collect_vec();
         Ok(if res.is_empty() {
-            None
+            // raw is a slow check due to network request, do it last
+            if raw::is_raw(url, config).await? {
+                Some(Self::Raw)
+            } else {
+                None
+            }
         } else if res.len() == 1 {
             Some(res[0])
         } else if res.len() > 1 {
