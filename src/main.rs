@@ -187,6 +187,19 @@ async fn main_start() -> Result<()> {
         let opts = sentry::ClientOptions {
             release: Some(name),
             traces_sample_rate: 1.0,
+            send_default_pii: false,
+            in_app_include: vec!["scraper"],
+            before_send: Some(Arc::new(|mut event: sentry::types::protocol::v7::Event | {
+                // Modify event here
+                event.request = event.request.map(|mut f| {
+                    f.cookies = None;
+                    // TODO: keep some important headers
+                    f.headers.clear();
+                    f
+                });
+                event.server_name = None;  // Don't send server name
+                Some(event)
+            })),
             ..Default::default()
         };
         sentry::init((url.to_string(), opts))
