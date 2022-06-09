@@ -46,17 +46,31 @@ pub async fn twitter_v2_scrape(config: &Configuration, url: &Url) -> Result<Opti
         ])
         .send()
         .await?;
-    let media = tweet.includes.clone().unwrap();
-    let tweet = tweet.data.clone().unwrap();
+    let media = match tweet.includes.as_ref() {
+        None => return Ok(None),
+        Some(includes) => includes,
+    };
+    let tweet = match tweet.data.as_ref() {
+        None => return Ok(None),
+        Some(data) => data,
+    };
+    let tweet_author = match tweet.author_id {
+        None => return Ok(None),
+        Some(author) => author,
+    };
     let user = TwitterApi::new(auth.clone())
-        .get_user(tweet.author_id.unwrap())
+        .get_user(tweet_author)
         .user_fields([UserField::Name, UserField::Url])
         .send()
         .await?
-        .into_data()
-        .unwrap();
+        .into_data();
+    
+    let user = match user {
+        None => return Ok(None),
+        Some(user) => user,
+    };
 
-    let images = match media.media {
+    let images = match &media.media {
         None => vec![],
         Some(media) => media
             .iter()
@@ -87,7 +101,7 @@ pub async fn twitter_v2_scrape(config: &Configuration, url: &Url) -> Result<Opti
         source_url: Some(super::from_url(url.clone())),
         author_name: Some(user.username),
         additional_tags: None,
-        description: Some(tweet.text),
+        description: Some(tweet.text.clone()),
         images,
     })))
 }
