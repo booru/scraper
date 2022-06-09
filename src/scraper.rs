@@ -7,7 +7,7 @@ mod tumblr;
 mod twitter;
 mod twitterv2;
 
-use std::{sync::Arc, collections::BTreeMap};
+use std::{collections::BTreeMap, sync::Arc};
 
 use anyhow::{Context, Result};
 use itertools::Itertools;
@@ -177,7 +177,8 @@ impl ToString for Scraper {
             Scraper::Philomena => "philomena",
             Scraper::Buzzly => "buzzly",
             Scraper::Raw => "raw",
-        }.to_string()
+        }
+        .to_string()
     }
 }
 

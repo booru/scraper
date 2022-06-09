@@ -177,19 +177,14 @@ async fn main_start() -> Result<()> {
         .init();
     tracing::info!("log level is now {}", config.log_level);
     let _sentry = config.sentry_url.as_ref().map(|url| {
-        let name = format!(
-            "{}@{}",
-            env!("CARGO_BIN_NAME"),
-            env!("VERGEN_GIT_SEMVER")
-        )
-        .into();
+        let name = format!("{}@{}", env!("CARGO_BIN_NAME"), env!("VERGEN_GIT_SEMVER")).into();
         tracing::info!("Enabling Sentry tracing for {name}");
         let opts = sentry::ClientOptions {
             release: Some(name),
             traces_sample_rate: 1.0,
             send_default_pii: false,
             in_app_include: vec!["scraper"],
-            before_send: Some(Arc::new(|mut event: sentry::types::protocol::v7::Event | {
+            before_send: Some(Arc::new(|mut event: sentry::types::protocol::v7::Event| {
                 // Modify event here
                 event.request = event.request.map(|mut f| {
                     f.cookies = None;
@@ -197,7 +192,7 @@ async fn main_start() -> Result<()> {
                     f.headers.clear();
                     f
                 });
-                event.server_name = None;  // Don't send server name
+                event.server_name = None; // Don't send server name
                 Some(event)
             })),
             ..Default::default()

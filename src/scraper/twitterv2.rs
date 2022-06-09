@@ -64,7 +64,7 @@ pub async fn twitter_v2_scrape(config: &Configuration, url: &Url) -> Result<Opti
         .send()
         .await?
         .into_data();
-    
+
     let user = match user {
         None => return Ok(None),
         Some(user) => user,
