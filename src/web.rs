@@ -111,6 +111,7 @@ pub async fn scrape_inner(
     let res = match res {
         Ok(r) => r,
         Err(e) => {
+            sentry::integrations::anyhow::capture_anyhow(&e);
             let e = ScrapeResult::from_err(e);
             return Ok(response::Response::builder()
                 .status(http::StatusCode::OK)

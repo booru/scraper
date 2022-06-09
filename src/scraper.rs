@@ -7,7 +7,7 @@ mod tumblr;
 mod twitter;
 mod twitterv2;
 
-use std::sync::Arc;
+use std::{sync::Arc, collections::BTreeMap};
 
 use anyhow::{Context, Result};
 use itertools::Itertools;
@@ -167,6 +167,20 @@ enum Scraper {
     Raw,
 }
 
+impl ToString for Scraper {
+    fn to_string(&self) -> String {
+        match self {
+            Scraper::Twitter => "twitter",
+            Scraper::Nitter => "nitter",
+            Scraper::Tumblr => "tumblr",
+            Scraper::DeviantArt => "deviantart",
+            Scraper::Philomena => "philomena",
+            Scraper::Buzzly => "buzzly",
+            Scraper::Raw => "raw",
+        }.to_string()
+    }
+}
+
 impl Scraper {
     #[tracing::instrument(skip(config, state))]
     async fn get_scraper(
@@ -229,12 +243,18 @@ impl Scraper {
         })
     }
 
-    #[tracing::instrument(skip(config))]
+    #[tracing::instrument(skip(config), fields(self))]
     async fn execute_scrape(
         self,
         config: &Configuration,
         url: &url::Url,
     ) -> Result<Option<ScrapeResult>> {
+        sentry::configure_scope(|scope| {
+            let mut map = BTreeMap::new();
+            map.insert("url".to_string(), url.to_string().into());
+            map.insert("scraper".to_string(), self.to_string().into());
+            scope.set_context("scraper", sentry::protocol::Context::Other(map));
+        });
         match self {
             Scraper::Twitter => Ok(twitter::twitter_scrape(config, url)
                 .await
