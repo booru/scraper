@@ -1,11 +1,12 @@
 use std::str::FromStr;
 
+use itertools::Itertools;
 use reqwest::Url;
 use reqwest_middleware::ClientWithMiddleware as Client;
 
 use crate::camo::camo_url;
 use crate::scraper::philomena::derpibooru::is_derpibooru;
-use crate::scraper::{from_url, ScrapeImage, ScrapeResult, ScrapeResultData};
+use crate::scraper::{ScrapeImage, ScrapeResult, ScrapeResultData};
 use crate::Configuration;
 use anyhow::{Context, Result};
 use tracing::{debug, trace};
@@ -63,8 +64,7 @@ pub async fn philomena_scrape(config: &Configuration, url: &Url) -> Result<Optio
     let source_url = source_url
         .map(|x| Url::from_str(&x))
         .transpose()
-        .context(format!("source url: {:?}", &image.source_url))?
-        .map(from_url);
+        .context(format!("source url: {:?}", &image.source_url))?;
     Ok(Some(ScrapeResult::Ok(ScrapeResultData {
         source_url,
         author_name: image
@@ -73,11 +73,24 @@ pub async fn philomena_scrape(config: &Configuration, url: &Url) -> Result<Optio
             .find(|x| x.starts_with("artist:"))
             .cloned()
             .map(|x| x.strip_prefix("artist:").unwrap().to_string()),
-        additional_tags: None,
+        additional_tags: {
+            let add_tags = image
+                .tags
+                .iter()
+                .filter(|x| !x.starts_with("artist:"))
+                .cloned()
+                .sorted()
+                .collect_vec();
+            if add_tags.is_empty() {
+                None
+            } else {
+                Some(add_tags)
+            }
+        },
         description,
         images: vec![ScrapeImage {
-            camo_url: from_url(camo_url(config, &image_view)?),
-            url: from_url(image_view),
+            camo_url: camo_url(config, &image_view)?,
+            url: image_view,
         }],
     })))
 }
@@ -114,14 +127,19 @@ mod test {
             (
                 r#"https://derpibooru.org/images/1426211"#,
                 ScrapeResultData {
-                    source_url: Some("http://brunomilan13.deviantart.com/art/Starlight-Glimmer-Season-6-by-Zacatron94-678047433".to_string()),
+                    source_url: Some(Url::parse("http://brunomilan13.deviantart.com/art/Starlight-Glimmer-Season-6-by-Zacatron94-678047433").unwrap()),
                     author_name: Some("zacatron94".to_string()),
-                    additional_tags: None,
+                    additional_tags: Some(vec![
+                        "blue eyes", "female", "horn", "mare", "multicolored mane",
+                        "multicolored tail", "pony", "safe", "simple background",
+                        "smiling", "solo", "standing", "starlight glimmer", "tail",
+                        "transparent background", "unicorn", "vector",
+                    ].into_iter().map(str::to_string).sorted().collect_vec()),
                     description: None,
                     images: vec![
                         ScrapeImage {
-                            url: "https://derpicdn.net/img/view/2017/5/1/1426211".to_string(),
-                            camo_url: "https://derpicdn.net/img/view/2017/5/1/1426211".to_string(),
+                            url: Url::parse("https://derpicdn.net/img/view/2017/5/1/1426211").unwrap(),
+                            camo_url: Url::parse("https://derpicdn.net/img/view/2017/5/1/1426211").unwrap(),
                         },
                     ],
                 },
@@ -129,14 +147,19 @@ mod test {
             (
                 r#"https://derpibooru.org/1426211"#,
                 ScrapeResultData {
-                    source_url: Some("http://brunomilan13.deviantart.com/art/Starlight-Glimmer-Season-6-by-Zacatron94-678047433".to_string()),
+                    source_url: Some(Url::parse("http://brunomilan13.deviantart.com/art/Starlight-Glimmer-Season-6-by-Zacatron94-678047433").unwrap()),
                     author_name: Some("zacatron94".to_string()),
-                    additional_tags: None,
+                    additional_tags: Some(vec![
+                        "blue eyes", "female", "horn", "mare", "multicolored mane",
+                        "multicolored tail", "pony", "safe", "simple background",
+                        "smiling", "solo", "standing", "starlight glimmer", "tail",
+                        "transparent background", "unicorn", "vector",
+                    ].into_iter().map(str::to_string).sorted().collect_vec()),
                     description: None,
                     images: vec![
                         ScrapeImage {
-                            url: "https://derpicdn.net/img/view/2017/5/1/1426211".to_string(),
-                            camo_url: "https://derpicdn.net/img/view/2017/5/1/1426211".to_string(),
+                            url: Url::parse("https://derpicdn.net/img/view/2017/5/1/1426211").unwrap(),
+                            camo_url: Url::parse("https://derpicdn.net/img/view/2017/5/1/1426211").unwrap(),
                         },
                     ],
                 },
@@ -144,14 +167,21 @@ mod test {
             (
                 r#"https://derpibooru.org/images/1"#,
                 ScrapeResultData {
-                    source_url: Some("https://www.deviantart.com/speccysy/art/Afternoon-Flight-215193985".to_string()),
+                    source_url: Some(Url::parse("https://www.deviantart.com/speccysy/art/Afternoon-Flight-215193985").unwrap()),
                     author_name: Some("speccysy".to_string()),
-                    additional_tags: None,
+                    additional_tags: Some(vec![
+                        "2011", "artifact", "cloud", "cloudy", "crepuscular rays", "cute", "dead source", "derpibooru legacy",
+                        "eyes closed", "female", "first fluttershy picture on derpibooru", "fluttershy", "flying", "g4", "happy",
+                        "index get", "long hair", "mammal", "mare", "messy mane", "milestone", "one of the first", "outdoors",
+                        "pegasus", "pink mane", "pink tail", "pony", "safe", "shyabetes", "signature", "sky", "smiling", "solo",
+                        "spread wings", "stretching", "sunlight", "sunshine", "sweet dreams fuel", "tail", "upside down",
+                        "weapons-grade cute", "wings"
+                    ].into_iter().map(str::to_string).sorted().collect_vec()),
                     description: None,
                     images: vec![
                         ScrapeImage {
-                            url: "https://derpicdn.net/img/view/2012/1/2/1".to_string(),
-                            camo_url: "https://derpicdn.net/img/view/2012/1/2/1".to_string(),
+                            url: Url::parse("https://derpicdn.net/img/view/2012/1/2/1").unwrap(),
+                            camo_url: Url::parse("https://derpicdn.net/img/view/2012/1/2/1").unwrap(),
                         },
                     ],
                 },
@@ -159,14 +189,21 @@ mod test {
             (
                 r#"https://derpibooru.org/1"#,
                 ScrapeResultData {
-                    source_url: Some("https://www.deviantart.com/speccysy/art/Afternoon-Flight-215193985".to_string()),
+                    source_url: Some(Url::parse("https://www.deviantart.com/speccysy/art/Afternoon-Flight-215193985").unwrap()),
                     author_name: Some("speccysy".to_string()),
-                    additional_tags: None,
+                    additional_tags: Some(vec![
+                        "2011", "artifact", "cloud", "cloudy", "crepuscular rays", "cute", "dead source", "derpibooru legacy",
+                        "eyes closed", "female", "first fluttershy picture on derpibooru", "fluttershy", "flying", "g4", "happy",
+                        "index get", "long hair", "mammal", "mare", "messy mane", "milestone", "one of the first", "outdoors",
+                        "pegasus", "pink mane", "pink tail", "pony", "safe", "shyabetes", "signature", "sky", "smiling", "solo",
+                        "spread wings", "stretching", "sunlight", "sunshine", "sweet dreams fuel", "tail", "upside down",
+                        "weapons-grade cute", "wings"
+                    ].into_iter().map(str::to_string).sorted().collect_vec()),
                     description: None,
                     images: vec![
                         ScrapeImage {
-                            url: "https://derpicdn.net/img/view/2012/1/2/1".to_string(),
-                            camo_url: "https://derpicdn.net/img/view/2012/1/2/1".to_string(),
+                            url: Url::parse("https://derpicdn.net/img/view/2012/1/2/1").unwrap(),
+                            camo_url: Url::parse("https://derpicdn.net/img/view/2012/1/2/1").unwrap(),
                         },
                     ],
                 },
@@ -176,12 +213,15 @@ mod test {
                 ScrapeResultData {
                     source_url: None,
                     author_name: None,
-                    additional_tags: None,
+                    additional_tags: Some(vec![
+                        "bathtub", "female", "irl", "mare", "pegasus", "photo", "ponies in real life", "pony", "rainbow dash",
+                        "safe", "shower", "solo", "surprised", "toilet", "vector"
+                    ].into_iter().map(str::to_string).sorted().collect_vec()),
                     description: Some("Dash, how'd you get in my(hit by shampoo bottle)".to_string()),
                     images: vec![
                         ScrapeImage {
-                            url: "https://derpicdn.net/img/view/2012/6/23/17368".to_string(),
-                            camo_url: "https://derpicdn.net/img/view/2012/6/23/17368".to_string(),
+                            url: Url::parse("https://derpicdn.net/img/view/2012/6/23/17368").unwrap(),
+                            camo_url: Url::parse("https://derpicdn.net/img/view/2012/6/23/17368").unwrap(),
                         },
                     ],
                 },
@@ -189,8 +229,8 @@ mod test {
         ];
         let config = Configuration::default();
         let state = State::new(config.clone())?;
-        for url in urls {
-            let scrape = tokio_test::block_on(scrape(&config, &state, url.0));
+        for (url, expected_result) in urls {
+            let scrape = tokio_test::block_on(scrape(&config, &state, url));
             let scrape = match scrape {
                 Ok(s) => s,
                 Err(e) => return Err(e),
@@ -200,14 +240,18 @@ mod test {
                 None => anyhow::bail!("got none response from scraper"),
             };
             match &mut scrape {
-                ScrapeResult::Ok(ref mut scrape) => scrape.images.iter_mut().for_each(|x| {
-                    x.url = x.url.split_once("__").unwrap().0.to_string();
-                    x.camo_url = x.camo_url.split_once("__").unwrap().0.to_string();
-                }),
+                ScrapeResult::Ok(ref mut scrape) => {
+                    scrape.images.iter_mut().for_each(|x: &mut ScrapeImage| {
+                        x.url
+                            .set_path(x.url.path().to_string().split_once("__").unwrap().0);
+                        x.camo_url
+                            .set_path(x.camo_url.path().to_string().split_once("__").unwrap().0);
+                    })
+                }
                 _ => panic!(),
             }
-            let expected_result = ScrapeResult::Ok(url.1);
-            visit_diff::assert_eq_diff!(expected_result, scrape);
+            let expected_result = ScrapeResult::Ok(expected_result);
+            assert_eq!(expected_result, scrape, "Failed on URL {url:?}");
         }
         Ok(())
     }

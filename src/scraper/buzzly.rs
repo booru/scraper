@@ -9,7 +9,7 @@ use reqwest_middleware::ClientWithMiddleware as Client;
 use tracing::*;
 
 use crate::camo::camo_url;
-use crate::scraper::{from_url, ScrapeImage, ScrapeResult, ScrapeResultData};
+use crate::scraper::{ScrapeImage, ScrapeResult, ScrapeResultData};
 use crate::Configuration;
 
 lazy_static::lazy_static! {
@@ -103,13 +103,13 @@ pub async fn buzzlyart_scrape(config: &Configuration, url: &Url) -> Result<Optio
     let mut tags: Vec<String> = tags.into_iter().flatten().collect();
     tags.push(format!("artist:{author_name}"));
     Ok(Some(ScrapeResult::Ok(ScrapeResultData {
-        source_url: Some(from_url(origin_url.clone())),
+        source_url: Some(origin_url.clone()),
         author_name: Some(author_name),
         additional_tags: Some(tags),
         description: Some(description),
         images: vec![ScrapeImage {
-            url: from_url(url),
-            camo_url: from_url(camo_url(config, &camod_url)?),
+            url,
+            camo_url: camo_url(config, &camod_url)?,
         }],
     })))
 }
@@ -121,6 +121,7 @@ mod test {
 
     use super::*;
     use test_log::test;
+    use url::Url;
 
     #[test]
     #[ignore = "buzzly is not supported anymore"]
@@ -130,9 +131,9 @@ mod test {
         let state = State::new(config.clone())?;
         let scrape = tokio_test::block_on(scrape(&config, &state, url))?.unwrap();
 
-        visit_diff::assert_eq_diff!(ScrapeResult::Ok(ScrapeResultData{
+        assert_eq!(ScrapeResult::Ok(ScrapeResultData{
             source_url: Some(
-                "https://buzzly.art/~mothnmag/art/fizzy".to_string(),
+                Url::parse("https://buzzly.art/~mothnmag/art/fizzy").unwrap(),
             ),
             author_name: Some(
                 "mothnmag".to_string(),
@@ -151,8 +152,8 @@ mod test {
             ),
             images: vec![
                 ScrapeImage {
-                    url: "https://submissions.buzzly.art/IMAGE/542f4f12-a882-4899-b37e-e4fd0e1765d4_055d6284-907c-4f84-a99b-2502201f4100.png".to_string(),
-                    camo_url: "https://submissions.buzzly.art/IMAGE/542f4f12-a882-4899-b37e-e4fd0e1765d4_67a9175f-04c3-4401-961a-670cc10c6a08_thumbnail.webp".to_string(),
+                    url: Url::parse("https://submissions.buzzly.art/IMAGE/542f4f12-a882-4899-b37e-e4fd0e1765d4_055d6284-907c-4f84-a99b-2502201f4100.png").unwrap(),
+                    camo_url: Url::parse("https://submissions.buzzly.art/IMAGE/542f4f12-a882-4899-b37e-e4fd0e1765d4_67a9175f-04c3-4401-961a-670cc10c6a08_thumbnail.webp").unwrap(),
                 },
             ],
         }), scrape);

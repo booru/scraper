@@ -111,8 +111,6 @@ pub async fn nitter_scrape(config: &Configuration, url: &Url) -> Result<Option<S
             let mut url = original_url.clone();
             url.set_path(&image_url);
             let camo_url = crate::camo::camo_url(config, &url).context("could not camo url")?;
-            let camo_url = super::from_url(camo_url);
-            let url = super::from_url(url);
             Ok(Some(ScrapeImage { url, camo_url }))
         });
     let mut images = Vec::new();
@@ -123,7 +121,7 @@ pub async fn nitter_scrape(config: &Configuration, url: &Url) -> Result<Option<S
         }
     }
     Ok(Some(ScrapeResult::Ok(ScrapeResultData {
-        source_url: Some(super::from_url(source_url)),
+        source_url: Some(source_url),
         author_name: Some(author.to_string()),
         additional_tags: None,
         description: Some(description.to_string()),
@@ -135,7 +133,7 @@ pub async fn nitter_scrape(config: &Configuration, url: &Url) -> Result<Option<S
 mod test {
     use rand::Rng;
 
-    use crate::scraper::{from_url, scrape};
+    use crate::scraper::scrape;
     use crate::State;
 
     use super::*;
@@ -155,19 +153,19 @@ mod test {
         let config = Configuration::default();
         let state = State::new(config.clone())?;
         let scrape = tokio_test::block_on(scrape(&config, &state, &tweet))?.unwrap();
-        visit_diff::assert_eq_diff!(ScrapeResult::Ok(ScrapeResultData{
-            source_url: Some(from_url(url::Url::from_str(r#"https://twitter.com/TheOnion/status/1372594920427491335?s=20"#)?)),
+        assert_eq!(ScrapeResult::Ok(ScrapeResultData{
+            source_url: Some(url::Url::parse(r#"https://twitter.com/TheOnion/status/1372594920427491335?s=20"#)?),
             author_name: Some("TheOnion".to_string()),
             additional_tags: None,
             description: Some("Deal Alert: The Federal Government Is Cutting You A $1,400 Stimulus Check That You Can, And Should, Spend Exclusively On 93 Copies Of ‘Stardew Valley’ bit.ly/3bX25sQ".to_string()),
             images: vec![
                 ScrapeImage {
-                    url: from_url(url::Url::from_str(
+                    url: url::Url::from_str(
                         &format!("https://{}/pic/media%2FEwxvzkEXAAMFg7K.jpg%3Fname%3Dorig?s=20", host),
-                    )?),
-                    camo_url: from_url(url::Url::from_str(
+                    )?,
+                    camo_url: url::Url::from_str(
                         &format!("https://{}/pic/media%2FEwxvzkEXAAMFg7K.jpg%3Fname%3Dorig?s=20", host),
-                    )?),
+                    )?,
                 }
             ]
         }), scrape);

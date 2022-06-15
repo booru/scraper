@@ -22,10 +22,10 @@ Available Scrapers are:
 
 | Service     | Status      | Notes                                                                         |
 |-------------|-------------|-------------------------------------------------------------------------------|
-| DeviantArt  | Alpha       | Will likely be able to grab atleast the CDN Image, which is usually hi-res    |
+| DeviantArt  | Beta        | Does not work for images flagged as mature                                    |
 | Twitter     | Production  | Requires regular adjustment but works otherwise                               |
 | Nitter      | Production  | Only supports officially listed instances                                     |
-| Tumblr      | Beta        | Missing Text-Post Scraping                                                    |
+| Tumblr      | Production  | Missing Text-Post Scraping                                                    |
 | Raw         | Production  | Valid for gif, jpeg, png, svg, webm                                           |
 | Philomena   | Production  | Works for a selected number of boorus                                         |
 | Buzzly.Art  | Unsupported | Actively broken                                                               |

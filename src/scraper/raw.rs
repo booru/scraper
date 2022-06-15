@@ -29,20 +29,20 @@ pub async fn is_raw(url: &Url, config: &Configuration) -> Result<bool> {
 #[tracing::instrument(skip(config))]
 pub async fn raw_scrape(config: &Configuration, url: &Url) -> Result<Option<ScrapeResult>> {
     Ok(Some(ScrapeResult::Ok(ScrapeResultData {
-        source_url: Some(super::from_url(url.clone())),
+        source_url: Some(url.clone()),
         author_name: None,
         additional_tags: None,
         description: None,
         images: Vec::from([ScrapeImage {
-            url: super::from_url(url.clone()),
-            camo_url: super::from_url(crate::camo::camo_url(config, url)?),
+            url: url.clone(),
+            camo_url: crate::camo::camo_url(config, url)?,
         }]),
     })))
 }
 
 #[cfg(test)]
 mod test {
-    use crate::scraper::{from_url, scrape};
+    use crate::scraper::scrape;
     use crate::State;
 
     use super::*;
@@ -64,16 +64,16 @@ mod test {
             None => anyhow::bail!("got none response from scraper"),
         };
         let expected_result = ScrapeResult::Ok(ScrapeResultData {
-            source_url: Some(from_url(url::Url::from_str(url)?)),
+            source_url: Some(url::Url::from_str(url)?),
             author_name: None,
             additional_tags: None,
             description: None,
             images: Vec::from([ScrapeImage {
-                url: from_url(url::Url::from_str(url)?),
-                camo_url: from_url(url::Url::from_str(url)?),
+                url: url::Url::from_str(url)?,
+                camo_url: url::Url::from_str(url)?,
             }]),
         });
-        visit_diff::assert_eq_diff!(expected_result, scrape);
+        assert_eq!(expected_result, scrape);
         Ok(())
     }
 }

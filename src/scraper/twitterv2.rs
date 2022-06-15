@@ -85,10 +85,7 @@ pub async fn twitter_v2_scrape(config: &Configuration, url: &Url) -> Result<Opti
                     .unwrap_or_else(|| url.clone());
                 let camo_url =
                     crate::camo::camo_url(config, &prev).expect("invalid tweet media uri");
-                Some(ScrapeImage {
-                    url: super::from_url(url),
-                    camo_url: super::from_url(camo_url),
-                })
+                Some(ScrapeImage { url, camo_url })
             })
             .collect_vec(),
     };
@@ -98,7 +95,7 @@ pub async fn twitter_v2_scrape(config: &Configuration, url: &Url) -> Result<Opti
     }
 
     Ok(Some(ScrapeResult::Ok(ScrapeResultData {
-        source_url: Some(super::from_url(url.clone())),
+        source_url: Some(url.clone()),
         author_name: Some(user.username),
         additional_tags: None,
         description: Some(tweet.text.clone()),

@@ -1,7 +1,7 @@
 use crate::scraper::client;
 use crate::scraper::ScrapeResultData;
 use crate::{
-    scraper::{from_url, ScrapeImage, ScrapeResult},
+    scraper::{ScrapeImage, ScrapeResult},
     Configuration,
 };
 use anyhow::Context;
@@ -59,8 +59,6 @@ pub async fn deviantart_scrape(config: &Configuration, url: &Url) -> Result<Opti
                     Some(v) => v,
                     None => anyhow::bail!("had no source url"),
                 };
-                let source_url = Url::parse(&crate::scraper::url_to_str(source_url))
-                    .context("source URL is not valid URL")?;
                 let images = try_old_hires(config, source_url, images, &camo)
                     .await
                     .context("old_hires conversion failed")?;
@@ -104,17 +102,13 @@ async fn extract_data(config: &Configuration, body: &str) -> Result<Option<(Scra
 
     Ok(Some((
         ScrapeResult::Ok(ScrapeResultData {
-            source_url: Some(crate::scraper::from_url(
-                Url::parse(source).context("source URL not valid URL")?,
-            )),
+            source_url: Some(Url::parse(source).context("source URL not valid URL")?),
             author_name: Some(artist.to_string()),
             additional_tags: None,
             description: None,
             images: vec![ScrapeImage {
-                url: crate::scraper::from_url(
-                    Url::parse(image).context("image URL not valid URL")?,
-                ),
-                camo_url: crate::scraper::from_url(camo.clone()),
+                url: Url::parse(image).context("image URL not valid URL")?,
+                camo_url: camo.clone(),
             }],
         }),
         camo,
@@ -158,7 +152,7 @@ async fn try_intermediary_hires(
             .status()
             == 200
         {
-            let built_url = from_url(built_url);
+            let built_url = built_url;
             images.push(ScrapeImage {
                 url: built_url,
                 camo_url: image.camo_url,
@@ -178,7 +172,7 @@ async fn try_new_hires(mut images: Vec<ScrapeImage>) -> Result<Vec<ScrapeImage>>
             });
             let new_url = Url::from_str(&new_url).context("could not parse png url")?;
             images.push(ScrapeImage {
-                url: from_url(new_url),
+                url: new_url,
                 camo_url: image.camo_url.clone(),
             })
         }
@@ -188,7 +182,7 @@ async fn try_new_hires(mut images: Vec<ScrapeImage>) -> Result<Vec<ScrapeImage>>
             });
             let new_url = Url::from_str(&new_url).context("could not parse jpeg url")?;
             images.push(ScrapeImage {
-                url: from_url(new_url),
+                url: new_url,
                 camo_url: image.camo_url.clone(),
             })
         }
@@ -199,7 +193,7 @@ async fn try_new_hires(mut images: Vec<ScrapeImage>) -> Result<Vec<ScrapeImage>>
 #[tracing::instrument(skip(config, camo))]
 async fn try_old_hires(
     config: &Configuration,
-    source_url: Url,
+    source_url: &Url,
     mut images: Vec<ScrapeImage>,
     camo: &Url,
 ) -> Result<Vec<ScrapeImage>> {
@@ -236,10 +230,8 @@ async fn try_old_hires(
     {
         let loc = loc.to_str().context("location not valid string")?;
         images.push(ScrapeImage {
-            url: crate::scraper::from_url(
-                Url::parse(loc).context("new old_hires location is not valid URL")?,
-            ),
-            camo_url: crate::scraper::from_url(camo.clone()),
+            url: Url::parse(loc).context("new old_hires location is not valid URL")?,
+            camo_url: camo.clone(),
         });
         return Ok(images);
     }
@@ -249,7 +241,7 @@ async fn try_old_hires(
 #[cfg(test)]
 mod test {
 
-    use crate::scraper::{scrape, url_to_str};
+    use crate::scraper::scrape;
     use crate::State;
 
     use super::*;
@@ -273,30 +265,26 @@ mod test {
             // remove token from URL
             if let ScrapeResult::Ok(result) = &mut scrape {
                 for image in result.images.iter_mut() {
-                    let fixup = url_to_str(&image.url);
-                    let mut fixup = url::Url::from_str(&fixup)?;
+                    let fixup = &mut image.url;
                     fixup.query_pairs_mut().clear();
-                    (*(image)).url = from_url(fixup);
-                    let fixup = url_to_str(&image.camo_url);
-                    let mut fixup = url::Url::from_str(&fixup)?;
+                    let fixup = &mut image.camo_url;
                     fixup.query_pairs_mut().clear();
-                    (*(image)).camo_url = from_url(fixup);
                 }
             }
         }
         let expected_result = ScrapeResult::Ok(ScrapeResultData{
-            source_url: Some("https://www.deviantart.com/the-park/art/Comm-Baseball-cap-derpy-833396912".to_string()),
+            source_url: Some(Url::parse("https://www.deviantart.com/the-park/art/Comm-Baseball-cap-derpy-833396912").unwrap()),
             author_name: Some("the-park".to_string()),
             additional_tags: None,
             description: None,
             images: vec![
                 ScrapeImage{
-                    url: "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/39da62f1-b049-4f7a-b10b-4cc5167cb9a2/dds6l68-3084d503-abbf-4f6d-bd82-7a36298e0106.png?".to_string(),
-                    camo_url: "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/39da62f1-b049-4f7a-b10b-4cc5167cb9a2/dds6l68-3084d503-abbf-4f6d-bd82-7a36298e0106.png?".to_string(),
+                    url: Url::parse("https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/39da62f1-b049-4f7a-b10b-4cc5167cb9a2/dds6l68-3084d503-abbf-4f6d-bd82-7a36298e0106.png?").unwrap(),
+                    camo_url: Url::parse("https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/39da62f1-b049-4f7a-b10b-4cc5167cb9a2/dds6l68-3084d503-abbf-4f6d-bd82-7a36298e0106.png?").unwrap(),
                 }
             ],
         });
-        visit_diff::assert_eq_diff!(expected_result, scrape);
+        assert_eq!(expected_result, scrape);
         Ok(())
     }
 }

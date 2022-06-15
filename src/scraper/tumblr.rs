@@ -5,7 +5,7 @@ use tracing::{debug, trace};
 use crate::TumblrDnsCache;
 use crate::{
     camo::camo_url,
-    scraper::{from_url, ScrapeImage, ScrapeResult, ScrapeResultData},
+    scraper::{ScrapeImage, ScrapeResult, ScrapeResultData},
     Configuration,
 };
 use anyhow::{Context, Result};
@@ -190,8 +190,8 @@ async fn process_post_text(
         let i = Url::from_str(i)?;
         println!("cap: {:?}", i);
         meta_images.push(ScrapeImage {
-            camo_url: from_url(camo_url(config, &i)?),
-            url: from_url(i),
+            camo_url: camo_url(config, &i)?,
+            url: i,
         });
     }
     Ok(Some(meta_images))
@@ -224,7 +224,7 @@ async fn process_post_photo(
                     Some(alt_sizes) => {
                         let mut valid_alt_sizes = Vec::new();
                         for alt_size in alt_sizes {
-                            if alt_size["width"] == 400 {
+                            if alt_size["width"] == serde_json::json!(400i64) {
                                 let url = alt_size["url"].as_str();
                                 match url {
                                     None => (),
@@ -250,8 +250,8 @@ async fn process_post_photo(
                     .iter()
                     .flat_map(|(image, preview)| -> Result<ScrapeImage> {
                         Ok(ScrapeImage {
-                            url: from_url(image.clone()),
-                            camo_url: from_url(camo_url(config, preview)?),
+                            url: image.clone(),
+                            camo_url: camo_url(config, preview)?,
                         })
                     })
                     .collect(),
@@ -267,7 +267,6 @@ async fn add_meta(post: Value, images: Option<Vec<ScrapeImage>>) -> Result<Optio
         Some(images) => {
             let source_url = post["post_url"].as_str().map(|x| x.to_string());
             let source_url = source_url.map(|x| Url::from_str(&x)).transpose()?;
-            let source_url = source_url.map(from_url);
             let author_name = post["blog_name"].as_str().map(|x| x.to_string());
             let description = post["summary"].as_str().map(|x| x.to_string());
 
@@ -356,18 +355,18 @@ mod test {
             None => anyhow::bail!("got none response from scraper"),
         };
         let expected_result = ScrapeResult::Ok(ScrapeResultData{
-            source_url: Some("https://tcn1205.tumblr.com/post/186904081532/in-wonderland".to_string()),
+            source_url: Some(Url::parse("https://tcn1205.tumblr.com/post/186904081532/in-wonderland")?),
             author_name: Some("tcn1205".to_string()),
             additional_tags: None,
             description: Some("In Wonderland.".to_string()),
             images: vec![
                 ScrapeImage{
-                    url: "https://64.media.tumblr.com/cf3b6e5981e0aaf0f1be305429faa6c4/tumblr_pw0dzrDNvN1vlyxx7o1_1280.png".to_string(),
-                    camo_url: "https://64.media.tumblr.com/cf3b6e5981e0aaf0f1be305429faa6c4/tumblr_pw0dzrDNvN1vlyxx7o1_400.png".to_string(),
+                    url: Url::parse("https://64.media.tumblr.com/cf3b6e5981e0aaf0f1be305429faa6c4/tumblr_pw0dzrDNvN1vlyxx7o1_1280.png")?,
+                    camo_url: Url::parse("https://64.media.tumblr.com/cf3b6e5981e0aaf0f1be305429faa6c4/tumblr_pw0dzrDNvN1vlyxx7o1_400.png")?,
                 }
             ],
         });
-        visit_diff::assert_eq_diff!(expected_result, scrape);
+        assert_eq!(expected_result, scrape);
         Ok(())
     }
 
@@ -392,18 +391,18 @@ mod test {
             None => anyhow::bail!("got none response from scraper"),
         };
         let expected_result = ScrapeResult::Ok(ScrapeResultData{
-            source_url: Some("https://witchtaunter.tumblr.com/post/182898769998/yes-this-is-horse".to_string()),
+            source_url: Some(Url::parse("https://witchtaunter.tumblr.com/post/182898769998/yes-this-is-horse")?),
             author_name: Some("witchtaunter".to_string()),
             additional_tags: None,
             description: Some("Yes, this is horse".to_string()),
             images: vec![
                 ScrapeImage{
-                    url: "https://64.media.tumblr.com/fbe494244d7e68e98e59141db4fddab7/tumblr_pn53n8VjWJ1s8a9ojo1_1280.png".to_string(),
-                    camo_url: "https://64.media.tumblr.com/fbe494244d7e68e98e59141db4fddab7/tumblr_pn53n8VjWJ1s8a9ojo1_400.png".to_string(),
+                    url: Url::parse("https://64.media.tumblr.com/fbe494244d7e68e98e59141db4fddab7/tumblr_pn53n8VjWJ1s8a9ojo1_1280.png")?,
+                    camo_url: Url::parse("https://64.media.tumblr.com/fbe494244d7e68e98e59141db4fddab7/tumblr_pn53n8VjWJ1s8a9ojo1_400.png")?,
                 }
             ],
         });
-        visit_diff::assert_eq_diff!(expected_result, scrape);
+        assert_eq!(expected_result, scrape);
         Ok(())
     }
 }

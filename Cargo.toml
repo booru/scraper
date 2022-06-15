@@ -42,7 +42,6 @@ twitter-v2 = "0.1.5"
 
 [dev-dependencies]
 tokio-test = "0.4"
-visit_diff = "0.1"
 rand = "0.8.5"
 test-log = "0.2.10"
 env_logger = "*"

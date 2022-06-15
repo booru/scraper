@@ -175,8 +175,8 @@ pub async fn twitter_scrape(config: &Configuration, url: &Url) -> Result<Option<
                     let camo_url = camo_url.context("could not generate Camo url")?;
                     debug!("urls: {}, noorig: {}", url_orig, url_noorig);
                     Ok(ScrapeImage {
-                        url: super::from_url(url_noorig),
-                        camo_url: super::from_url(camo_url),
+                        url: url_noorig,
+                        camo_url,
                     })
                 })
                 .collect(),
@@ -187,9 +187,7 @@ pub async fn twitter_scrape(config: &Configuration, url: &Url) -> Result<Option<
         return Ok(None);
     }
     Ok(Some(ScrapeResult::Ok(ScrapeResultData {
-        source_url: Some(super::from_url(
-            url::Url::from_str(&url).context("source is not valid URL")?,
-        )),
+        source_url: Some(url::Url::from_str(&url).context("source is not valid URL")?),
         author_name: Some(user.to_owned()),
         additional_tags: None,
         description: tweet.index("text").as_str().map_or_else(
@@ -204,7 +202,7 @@ pub async fn twitter_scrape(config: &Configuration, url: &Url) -> Result<Option<
 mod test {
 
     use super::*;
-    use crate::scraper::{from_url, scrape};
+    use crate::scraper::scrape;
     use crate::State;
     use std::str::FromStr;
     use test_log::test;
@@ -229,12 +227,8 @@ mod test {
             None => anyhow::bail!("got none response from scraper"),
         };
         let test_results_expected = ScrapeImage {
-            url: from_url(url::Url::from_str(
-                "https://pbs.twimg.com/media/EwxvzkEXAAMFg7k.jpg",
-            )?),
-            camo_url: from_url(url::Url::from_str(
-                "https://pbs.twimg.com/media/EwxvzkEXAAMFg7k.jpg",
-            )?),
+            url: url::Url::from_str("https://pbs.twimg.com/media/EwxvzkEXAAMFg7k.jpg")?,
+            camo_url: url::Url::from_str("https://pbs.twimg.com/media/EwxvzkEXAAMFg7k.jpg")?,
         };
         match &mut scrape {
             ScrapeResult::Ok(scrape) => {
@@ -246,8 +240,8 @@ mod test {
             ScrapeResult::Err(e) => panic!("error in scrape: {:?}", e.errors),
             ScrapeResult::None => panic!("no data in scrape"),
         }
-        visit_diff::assert_eq_diff!(ScrapeResult::Ok(ScrapeResultData{
-            source_url: Some(from_url(parsed)),
+        assert_eq!(ScrapeResult::Ok(ScrapeResultData{
+            source_url: Some(parsed),
             author_name: Some("TheOnion".to_string()),
             additional_tags: None,
             description: Some("Deal Alert: The Federal Government Is Cutting You A $1,400 Stimulus Check That You Can, And Should, Spend Exclusively On 93 Copies Of ‘Stardew Valley’ https://t.co/RuRZN4XWIK https://t.co/tclZn8dQgg".to_string()),

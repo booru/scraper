@@ -14,41 +14,11 @@ use itertools::Itertools;
 use sentry::integrations::anyhow::capture_anyhow;
 use serde::{Deserialize, Serialize};
 use tracing::debug;
-#[cfg(test)]
-use visit_diff::Diff;
+use url::Url;
 
 use crate::{Configuration, State};
 
-#[cfg(not(test))]
-pub type UrlT = url::Url;
-
-#[cfg(not(test))]
-#[inline]
-pub fn from_url(f: url::Url) -> UrlT {
-    f
-}
-
-#[cfg(not(test))]
-pub fn url_to_str(f: &UrlT) -> String {
-    f.to_string()
-}
-
-#[cfg(test)]
-pub type UrlT = String;
-
-#[cfg(test)]
-#[inline]
-pub fn from_url(f: url::Url) -> UrlT {
-    f.to_string()
-}
-
-#[cfg(test)]
-pub fn url_to_str(f: &UrlT) -> String {
-    f.to_string()
-}
-
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(test, derive(Diff))]
 #[serde(untagged)]
 pub enum ScrapeResult {
     Err(ScrapeResultError),
@@ -57,7 +27,6 @@ pub enum ScrapeResult {
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(test, derive(Diff))]
 pub struct ScrapeResultError {
     errors: Vec<String>,
 }
@@ -69,9 +38,8 @@ impl From<String> for ScrapeResultError {
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(test, derive(Diff))]
 pub struct ScrapeResultData {
-    source_url: Option<UrlT>,
+    source_url: Option<Url>,
     author_name: Option<String>,
     additional_tags: Option<Vec<String>>,
     description: Option<String>,
@@ -102,18 +70,10 @@ impl ScrapeResult {
     }
 }
 
-#[derive(Deserialize, Serialize, Debug, Clone, Eq)]
-#[cfg_attr(test, derive(Diff))]
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Eq)]
 pub struct ScrapeImage {
-    url: UrlT,
-    camo_url: UrlT,
-}
-
-impl PartialEq for ScrapeImage {
-    fn eq(&self, other: &Self) -> bool {
-        url_to_str(&self.url).eq_ignore_ascii_case(&url_to_str(&other.url))
-            && url_to_str(&self.camo_url).eq_ignore_ascii_case(&url_to_str(&other.camo_url))
-    }
+    url: Url,
+    camo_url: Url,
 }
 
 #[tracing::instrument(skip(config))]
