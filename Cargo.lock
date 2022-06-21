@@ -2936,9 +2936,9 @@ checksum = "59547bce71d9c38b83d9c0e92b6066c4253371f15005def0c30d9657f50c7642"
 
 [[package]]
 name = "twitter-v2"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "150054f2f4177c423ac174697b45f50c8196ff7fd321ff91642cae963978c1b2"
+checksum = "f94950be6940be5afbb14bdd7201940af06349c2e4c85c72eb4b165be804c09e"
 dependencies = [
  "async-trait",
  "futures",
