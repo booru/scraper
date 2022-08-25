@@ -111,7 +111,7 @@ pub fn client_with_redir_limit(
         }
     };
     Ok(reqwest_middleware::ClientBuilder::new(client.build()?)
-        .with(reqwest_tracing::TracingMiddleware)
+        .with(reqwest_tracing::TracingMiddleware::default())
         .build())
     //Ok(client.build()?)
 }
