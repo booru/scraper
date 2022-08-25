@@ -169,14 +169,8 @@ mod test {
                 ScrapeResultData {
                     source_url: Some(Url::parse("https://www.deviantart.com/speccysy/art/Afternoon-Flight-215193985").unwrap()),
                     author_name: Some("speccysy".to_string()),
-                    additional_tags: Some(vec![
-                        "2011", "artifact", "cloud", "cloudy", "crepuscular rays", "cute", "dead source", "derpibooru legacy",
-                        "eyes closed", "female", "first fluttershy picture on derpibooru", "fluttershy", "flying", "g4", "happy",
-                        "index get", "long hair", "mammal", "mare", "messy mane", "milestone", "one of the first", "outdoors",
-                        "pegasus", "pink mane", "pink tail", "pony", "safe", "shyabetes", "signature", "sky", "smiling", "solo",
-                        "spread wings", "stretching", "sunlight", "sunshine", "sweet dreams fuel", "tail", "upside down",
-                        "weapons-grade cute", "wings"
-                    ].into_iter().map(str::to_string).sorted().collect_vec()),
+                    additional_tags: Some(vec!["2011", "artifact", "cloud", "cloudy", "crepuscular rays", "cute", "derpibooru legacy", "eyes closed", "female", "first fluttershy picture on derpibooru", "fluttershy", "flying", "g4", "happy", "index get", "long hair", "mammal", "mare", "messy mane", "milestone", "one of the first", "outdoors", "pegasus", "pony", "safe", "shyabetes", "signature", "sky", "smiling", "solo", "spread wings", "stretching", "sunlight", "sunshine", "sweet dreams fuel", "upside down", "weapons-grade cute", "wings"]
+                    .into_iter().map(str::to_string).sorted().collect_vec()),
                     description: None,
                     images: vec![
                         ScrapeImage {
@@ -191,14 +185,7 @@ mod test {
                 ScrapeResultData {
                     source_url: Some(Url::parse("https://www.deviantart.com/speccysy/art/Afternoon-Flight-215193985").unwrap()),
                     author_name: Some("speccysy".to_string()),
-                    additional_tags: Some(vec![
-                        "2011", "artifact", "cloud", "cloudy", "crepuscular rays", "cute", "dead source", "derpibooru legacy",
-                        "eyes closed", "female", "first fluttershy picture on derpibooru", "fluttershy", "flying", "g4", "happy",
-                        "index get", "long hair", "mammal", "mare", "messy mane", "milestone", "one of the first", "outdoors",
-                        "pegasus", "pink mane", "pink tail", "pony", "safe", "shyabetes", "signature", "sky", "smiling", "solo",
-                        "spread wings", "stretching", "sunlight", "sunshine", "sweet dreams fuel", "tail", "upside down",
-                        "weapons-grade cute", "wings"
-                    ].into_iter().map(str::to_string).sorted().collect_vec()),
+                    additional_tags: Some(vec!["2011", "artifact", "cloud", "cloudy", "crepuscular rays", "cute", "derpibooru legacy", "eyes closed", "female", "first fluttershy picture on derpibooru", "fluttershy", "flying", "g4", "happy", "index get", "long hair", "mammal", "mare", "messy mane", "milestone", "one of the first", "outdoors", "pegasus", "pony", "safe", "shyabetes", "signature", "sky", "smiling", "solo", "spread wings", "stretching", "sunlight", "sunshine", "sweet dreams fuel", "upside down", "weapons-grade cute", "wings"].into_iter().map(str::to_string).sorted().collect_vec()),
                     description: None,
                     images: vec![
                         ScrapeImage {

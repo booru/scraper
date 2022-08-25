@@ -287,4 +287,45 @@ mod test {
         assert_eq!(expected_result, scrape);
         Ok(())
     }
+
+    #[test]
+    fn test_deviantart_scraper_failed_scrape_220825() -> Result<()> {
+        let url = r#"https://www.deviantart.com/joellethenose/art/Luna-378433727"#;
+        let config = Configuration::default();
+        let state = State::new(config.clone())?;
+        let scrape = tokio_test::block_on(scrape(&config, &state, url));
+        let scrape = match scrape {
+            Ok(s) => s,
+            Err(e) => return Err(e),
+        };
+        let mut scrape = match scrape {
+            Some(s) => s,
+            None => anyhow::bail!("got none response from scraper"),
+        };
+        {
+            // remove token from URL
+            if let ScrapeResult::Ok(result) = &mut scrape {
+                for image in result.images.iter_mut() {
+                    let fixup = &mut image.url;
+                    fixup.query_pairs_mut().clear();
+                    let fixup = &mut image.camo_url;
+                    fixup.query_pairs_mut().clear();
+                }
+            }
+        }
+        let expected_result = ScrapeResult::Ok(ScrapeResultData{
+            source_url: Some(Url::parse("https://www.deviantart.com/joellethenose/art/Luna-378433727").unwrap()),
+            author_name: Some("joellethenose".to_string()),
+            additional_tags: None,
+            description: None,
+            images: vec![
+                ScrapeImage{
+                    url: Url::parse("https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/86a8f3ea-88f8-434f-b821-a0d48ce59131/d69b5bz-9498b591-38b2-4b7b-8a48-92cee122f131.jpg/v1/fill/w_1280,h_931,q_75,strp/luna_by_joellethenose_d69b5bz-fullview.jpg?").unwrap(),
+                    camo_url: Url::parse("https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/86a8f3ea-88f8-434f-b821-a0d48ce59131/d69b5bz-9498b591-38b2-4b7b-8a48-92cee122f131.jpg/v1/fill/w_1280,h_931,q_75,strp/luna_by_joellethenose_d69b5bz-fullview.jpg?").unwrap(),
+                }
+            ],
+        });
+        assert_eq!(expected_result, scrape);
+        Ok(())
+    }
 }
