@@ -48,7 +48,7 @@ env_logger = "*"
 
 [build-dependencies]
 anyhow = "1.0"
-vergen = "7.2.1"
+vergen = "7.4.2"
 
 [profile.release]
 opt-level = 3
