@@ -362,7 +362,7 @@ dependencies = [
  "hex",
  "hmac 0.10.1",
  "securefmt",
- "url 2.2.2",
+ "url 2.3.0",
 ]
 
 [[package]]
@@ -474,7 +474,7 @@ dependencies = [
  "serde",
  "serde_json",
  "time",
- "url 2.2.2",
+ "url 2.3.0",
 ]
 
 [[package]]
@@ -940,7 +940,7 @@ dependencies = [
  "libc",
  "libgit2-sys",
  "log",
- "url 2.2.2",
+ "url 2.3.0",
 ]
 
 [[package]]
@@ -1613,7 +1613,7 @@ dependencies = [
  "serde_path_to_error",
  "sha2 0.10.2",
  "thiserror",
- "url 2.2.2",
+ "url 2.3.0",
 ]
 
 [[package]]
@@ -1999,7 +1999,7 @@ dependencies = [
  "tokio-socks",
  "tokio-util",
  "tower-service",
- "url 2.2.2",
+ "url 2.3.0",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
@@ -2156,7 +2156,7 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "twitter-v2",
- "url 2.2.2",
+ "url 2.3.0",
  "url_serde",
  "vergen",
  "visdom",
@@ -2296,7 +2296,7 @@ dependencies = [
  "sentry-core",
  "tower-layer",
  "tower-service",
- "url 2.2.2",
+ "url 2.3.0",
 ]
 
 [[package]]
@@ -2323,7 +2323,7 @@ dependencies = [
  "serde_json",
  "thiserror",
  "time",
- "url 2.2.2",
+ "url 2.3.0",
  "uuid",
 ]
 
@@ -2916,7 +2916,7 @@ dependencies = [
  "thiserror",
  "time",
  "tokio",
- "url 2.2.2",
+ "url 2.3.0",
 ]
 
 [[package]]
@@ -2986,13 +2986,12 @@ dependencies = [
 
 [[package]]
 name = "url"
-version = "2.2.2"
+version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a507c383b2d33b5fc35d1861e77e6b383d158b2da5e14fe51b83dfedf6fd578c"
+checksum = "22fe195a4f217c25b25cb5058ced57059824a678474874038dc88d211bf508d3"
 dependencies = [
  "form_urlencoded",
  "idna 0.2.3",
- "matches",
  "percent-encoding 2.1.0",
  "serde",
 ]
