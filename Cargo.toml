@@ -38,7 +38,7 @@ sentry-tower = { version = "0.27.0", features = ["http"] }
 futures = "0.3.25"
 reqwest-middleware = "0.1.1"
 reqwest-tracing = "0.3"
-twitter-v2 = "0.1.7"
+twitter-v2 = "0.1.8"
 
 [dev-dependencies]
 tokio-test = "0.4"
