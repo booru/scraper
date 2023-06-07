@@ -330,4 +330,46 @@ mod test {
         assert_eq!(expected_result, scrape);
         Ok(())
     }
+
+    #[cfg(feature = "net-tests")]
+    #[test]
+    fn test_deviantart_scraper_failed_scrape_230607() -> Result<()> {
+        let url = r#"https://www.deviantart.com/aztrial/art/MLP-G5-Ruby-Jubilee-962914035"#;
+        let config = Configuration::default();
+        let state = State::new(config.clone())?;
+        let scrape = tokio_test::block_on(scrape(&config, &state, url));
+        let scrape = match scrape {
+            Ok(s) => s,
+            Err(e) => return Err(e),
+        };
+        let mut scrape = match scrape {
+            Some(s) => s,
+            None => anyhow::bail!("got none response from scraper"),
+        };
+        {
+            // remove token from URL
+            if let ScrapeResult::Ok(result) = &mut scrape {
+                for image in result.images.iter_mut() {
+                    let fixup = &mut image.url;
+                    fixup.query_pairs_mut().clear();
+                    let fixup = &mut image.camo_url;
+                    fixup.query_pairs_mut().clear();
+                }
+            }
+        }
+        let expected_result = ScrapeResult::Ok(ScrapeResultData{
+            source_url: Some(Url::parse("https://www.deviantart.com/aztrial/art/MLP-G5-Ruby-Jubilee-962914035").unwrap()),
+            author_name: Some("aztrial".to_string()),
+            additional_tags: None,
+            description: None,
+            images: vec![
+                ScrapeImage{
+                    url: Url::parse("https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/2f871ec7-c49f-4d50-a83d-4a775e89b234/dfxal83-0996fb96-92cb-458d-a83c-2a2a03a8d7c4.png/v1/fill/w_1280,h_1586,q_80,strp/mlp_g5__ruby_jubilee___by_aztrial_dfxal83-fullview.jpg?").unwrap(),
+                    camo_url: Url::parse("https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/2f871ec7-c49f-4d50-a83d-4a775e89b234/dfxal83-0996fb96-92cb-458d-a83c-2a2a03a8d7c4.png/v1/fill/w_1280,h_1586,q_80,strp/mlp_g5__ruby_jubilee___by_aztrial_dfxal83-fullview.jpg?").unwrap(),
+                }
+            ],
+        });
+        assert_eq!(expected_result, scrape);
+        Ok(())
+    }
 }

@@ -70,10 +70,19 @@ impl ScrapeResult {
     }
 }
 
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Eq)]
+#[derive(Deserialize, Serialize, Clone, PartialEq, Eq)]
 pub struct ScrapeImage {
     url: Url,
     camo_url: Url,
+}
+
+impl std::fmt::Debug for ScrapeImage {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ScrapeImage")
+            .field("url", &self.url.to_string())
+            .field("camo_url", &self.camo_url.to_string())
+            .finish()
+    }
 }
 
 #[tracing::instrument(skip(config))]
