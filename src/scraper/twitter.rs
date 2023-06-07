@@ -208,6 +208,7 @@ mod test {
     use test_log::test;
 
     //TODO: fix twitter test & scraper
+    #[cfg(feature = "net-tests")]
     #[test]
     #[ignore = "twitter is too unstable to test properly atm"]
     fn test_twitter_scraper() -> Result<()> {

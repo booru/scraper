@@ -121,6 +121,7 @@ mod test {
     use super::*;
     use test_log::test;
 
+    #[cfg(feature = "net-tests")]
     #[test]
     fn test_derpibooru_scraper() -> Result<()> {
         let urls = vec![

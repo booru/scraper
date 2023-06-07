@@ -140,6 +140,7 @@ mod test {
     use std::str::FromStr;
     use test_log::test;
 
+    #[cfg(feature = "net-tests")]
     #[test]
     #[ignore]
     fn test_nitter_scraper() -> Result<()> {

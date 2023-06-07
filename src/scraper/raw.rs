@@ -49,6 +49,7 @@ mod test {
     use std::str::FromStr;
     use test_log::test;
 
+    #[cfg(feature = "net-tests")]
     #[test]
     fn test_raw_scraper() -> Result<()> {
         let url = r#"https://static.manebooru.art/img/view/2021/3/20/4010154.png"#;

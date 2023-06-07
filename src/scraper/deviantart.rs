@@ -247,6 +247,7 @@ mod test {
     use super::*;
     use test_log::test;
 
+    #[cfg(feature = "net-tests")]
     #[test]
     fn test_deviantart_scraper() -> Result<()> {
         let url = r#"https://www.deviantart.com/the-park/art/Comm-Baseball-cap-derpy-833396912"#;
@@ -288,6 +289,7 @@ mod test {
         Ok(())
     }
 
+    #[cfg(feature = "net-tests")]
     #[test]
     fn test_deviantart_scraper_failed_scrape_220825() -> Result<()> {
         let url = r#"https://www.deviantart.com/joellethenose/art/Luna-378433727"#;

@@ -123,6 +123,7 @@ mod test {
     use test_log::test;
     use url::Url;
 
+    #[cfg(feature = "net-tests")]
     #[test]
     #[ignore = "buzzly is not supported anymore"]
     fn test_buzzlyart_scraper() -> Result<()> {
