@@ -145,7 +145,7 @@ dependencies = [
  "http-body",
  "hyper",
  "itoa",
- "matchit",
+ "matchit 0.5.0",
  "memchr",
  "mime",
  "percent-encoding 2.3.0",
@@ -1363,6 +1363,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "73cbba799671b762df5a175adf59ce145165747bb891505c43d09aefbbf38beb"
 
 [[package]]
+name = "matchit"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b87248edafb776e59e6ee64a79086f65890d3510f2c656c000bf2a7e8a0aea40"
+
+[[package]]
 name = "md-5"
 version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1918,16 +1924,33 @@ dependencies = [
 ]
 
 [[package]]
-name = "reqwest-tracing"
-version = "0.3.1"
+name = "reqwest-middleware"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "64977f9a47fa7768cc88751e29026e569730ac1667c2eaeaac04b32624849fbe"
+checksum = "4531c89d50effe1fac90d095c8b133c20c5c714204feee0bfc3fd158e784209d"
 dependencies = [
+ "anyhow",
  "async-trait",
+ "http",
  "reqwest",
- "reqwest-middleware",
+ "serde",
  "task-local-extensions",
- "tokio",
+ "thiserror",
+]
+
+[[package]]
+name = "reqwest-tracing"
+version = "0.4.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "783e8130d2427ddd7897dd3f814d4a3aea31b05deb42a4fdf8c18258fe5aefd1"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "getrandom",
+ "matchit 0.7.0",
+ "reqwest",
+ "reqwest-middleware 0.2.2",
+ "task-local-extensions",
  "tracing",
 ]
 
@@ -2100,7 +2123,7 @@ dependencies = [
  "rand",
  "regex",
  "reqwest",
- "reqwest-middleware",
+ "reqwest-middleware 0.1.6",
  "reqwest-tracing",
  "securefmt",
  "sentry",
