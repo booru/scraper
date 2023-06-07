@@ -48,6 +48,11 @@ pub struct Configuration {
     twitter_api_key_secret: Option<String>,
     #[envconfig(from = "TWITTER_API_BEARER")]
     twitter_api_key_bearer: Option<String>,
+    #[envconfig(
+        from = "SCRAPER_RS_USER_AGENT",
+        default = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/114.0"
+    )]
+    user_agent: String,
 }
 
 #[derive(Clone)]
@@ -123,6 +128,9 @@ impl Default for Configuration {
             twitter_api_key: None,
             twitter_api_key_bearer: None,
             twitter_api_key_secret: None,
+            user_agent:
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/114.0"
+                    .to_string(),
         };
         trace!("created config: {:?}", s);
         s
