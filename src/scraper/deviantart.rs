@@ -12,13 +12,13 @@ use tracing::trace;
 use url::Url;
 
 lazy_static::lazy_static! {
-    static ref IMAGE_REGEX: Regex = Regex::from_str(r#"<link data-rh="true" rel="preload" href="([^"]*)" as="image"/>"#).expect("failure in setting up essential regex");
-    static ref SOURCE_REGEX: Regex = Regex::from_str(r#"<link data-rh="true" rel="canonical" href="([^"]*)"/>"#).expect("failure in setting up essential regex");
+    static ref IMAGE_REGEX: Regex = Regex::from_str(r#"data-rh="true" rel="preload" href="([^"]*)" as="image""#).expect("failure in setting up essential regex");
+    static ref SOURCE_REGEX: Regex = Regex::from_str(r#"rel="canonical" href="([^"]*)""#).expect("failure in setting up essential regex");
     static ref ARTIST_REGEX: Regex = Regex::from_str(r#"https://www.deviantart.com/([^/]*)/art"#).expect("failure in setting up essential regex");
     static ref SERIAL_REGEX: Regex = Regex::from_str(r#"https://www.deviantart.com/(?:.*?)-(\d+)\z"#).expect("failure in setting up essential regex");
     static ref CDNINT_REGEX: Regex = Regex::from_str(r#"(https://images-wixmp-[0-9a-f]+.wixmp.com)(?:/intermediary)?/f/([^/]*)/([^/?]*)"#).expect("failure in setting up essential regex");
     static ref PNG_REGEX: Regex = Regex::from_str(r#"(https://[0-9a-z\-\.]+(?:/intermediary)?/f/[0-9a-f\-]+/[0-9a-z\-]+\.png/v1/fill/[0-9a-z_,]+/[0-9a-z_\-]+)(\.png)(.*)"#).expect("failure in setting up essential regex");
-    static ref JPG_REGEX: Regex = Regex::from_str(r#"(https://[0-9a-z\-\.]+(?:/intermediary)?/f/[0-9a-f\-]+/[0-9a-z\-]+\.jpg/v1/fill/w_[0-9]+,h_[0-9]+,q_)([0-9]+)(,[a-z]+\\/[a-z0-6_\-]+\.jpe?g.*)"#).expect("failure in setting up essential regex");
+    static ref JPG_REGEX: Regex = Regex::from_str(r#"(https://[0-9a-z\-\.]+(?:/intermediary)?/f/[0-9a-f\-]+/[0-9a-z\-]+\.jpg/v1/fill/w_[0-9]+,h_[0-9]+,q_)([0-9]+)(,[a-z]+\/[a-z0-6_\-]+\.jpe?g.*)"#).expect("failure in setting up essential regex");
 }
 
 #[tracing::instrument]

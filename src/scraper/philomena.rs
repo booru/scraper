@@ -129,12 +129,7 @@ mod test {
                 ScrapeResultData {
                     source_url: Some(Url::parse("http://brunomilan13.deviantart.com/art/Starlight-Glimmer-Season-6-by-Zacatron94-678047433").unwrap()),
                     author_name: Some("zacatron94".to_string()),
-                    additional_tags: Some(vec![
-                        "blue eyes", "female", "horn", "mare", "multicolored mane",
-                        "multicolored tail", "pony", "safe", "simple background",
-                        "smiling", "solo", "standing", "starlight glimmer", "tail",
-                        "transparent background", "unicorn", "vector",
-                    ].into_iter().map(str::to_string).sorted().collect_vec()),
+                    additional_tags: Some(vec![]),
                     description: None,
                     images: vec![
                         ScrapeImage {
@@ -149,12 +144,7 @@ mod test {
                 ScrapeResultData {
                     source_url: Some(Url::parse("http://brunomilan13.deviantart.com/art/Starlight-Glimmer-Season-6-by-Zacatron94-678047433").unwrap()),
                     author_name: Some("zacatron94".to_string()),
-                    additional_tags: Some(vec![
-                        "blue eyes", "female", "horn", "mare", "multicolored mane",
-                        "multicolored tail", "pony", "safe", "simple background",
-                        "smiling", "solo", "standing", "starlight glimmer", "tail",
-                        "transparent background", "unicorn", "vector",
-                    ].into_iter().map(str::to_string).sorted().collect_vec()),
+                    additional_tags: Some(vec![]),
                     description: None,
                     images: vec![
                         ScrapeImage {
@@ -169,8 +159,7 @@ mod test {
                 ScrapeResultData {
                     source_url: Some(Url::parse("https://www.deviantart.com/speccysy/art/Afternoon-Flight-215193985").unwrap()),
                     author_name: Some("speccysy".to_string()),
-                    additional_tags: Some(vec!["2011", "artifact", "cloud", "cloudy", "crepuscular rays", "cute", "derpibooru legacy", "eyes closed", "female", "first fluttershy picture on derpibooru", "fluttershy", "flying", "g4", "happy", "index get", "long hair", "mammal", "mare", "messy mane", "milestone", "one of the first", "outdoors", "pegasus", "pony", "safe", "shyabetes", "signature", "sky", "smiling", "solo", "spread wings", "stretching", "sunlight", "sunshine", "sweet dreams fuel", "upside down", "weapons-grade cute", "wings"]
-                    .into_iter().map(str::to_string).sorted().collect_vec()),
+                    additional_tags: Some(vec![]),
                     description: None,
                     images: vec![
                         ScrapeImage {
@@ -185,7 +174,7 @@ mod test {
                 ScrapeResultData {
                     source_url: Some(Url::parse("https://www.deviantart.com/speccysy/art/Afternoon-Flight-215193985").unwrap()),
                     author_name: Some("speccysy".to_string()),
-                    additional_tags: Some(vec!["2011", "artifact", "cloud", "cloudy", "crepuscular rays", "cute", "derpibooru legacy", "eyes closed", "female", "first fluttershy picture on derpibooru", "fluttershy", "flying", "g4", "happy", "index get", "long hair", "mammal", "mare", "messy mane", "milestone", "one of the first", "outdoors", "pegasus", "pony", "safe", "shyabetes", "signature", "sky", "smiling", "solo", "spread wings", "stretching", "sunlight", "sunshine", "sweet dreams fuel", "upside down", "weapons-grade cute", "wings"].into_iter().map(str::to_string).sorted().collect_vec()),
+                    additional_tags: Some(vec![]),
                     description: None,
                     images: vec![
                         ScrapeImage {
@@ -200,10 +189,7 @@ mod test {
                 ScrapeResultData {
                     source_url: None,
                     author_name: None,
-                    additional_tags: Some(vec![
-                        "bathtub", "female", "irl", "mare", "pegasus", "photo", "ponies in real life", "pony", "rainbow dash",
-                        "safe", "shower", "solo", "surprised", "toilet", "vector"
-                    ].into_iter().map(str::to_string).sorted().collect_vec()),
+                    additional_tags: Some(vec![]),
                     description: Some("Dash, how'd you get in my(hit by shampoo bottle)".to_string()),
                     images: vec![
                         ScrapeImage {
@@ -233,7 +219,8 @@ mod test {
                             .set_path(x.url.path().to_string().split_once("__").unwrap().0);
                         x.camo_url
                             .set_path(x.camo_url.path().to_string().split_once("__").unwrap().0);
-                    })
+                    });
+                    scrape.additional_tags = Some(vec![]);
                 }
                 _ => panic!(),
             }
