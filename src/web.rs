@@ -21,6 +21,7 @@ pub struct ScrapeRequest {
     _method: Option<String>,
 }
 
+#[allow(clippy::let_with_type_underscore)]
 #[tracing::instrument(skip(req, next))]
 pub async fn latency<B>(req: Request<B>, next: Next<B>) -> impl IntoResponse {
     let uri = req.uri().clone();
@@ -36,7 +37,7 @@ pub async fn latency<B>(req: Request<B>, next: Next<B>) -> impl IntoResponse {
 
     res.headers_mut().append(
         "x-time-taken",
-        axum::http::HeaderValue::from_str(&*time_taken).unwrap(),
+        axum::http::HeaderValue::from_str(&time_taken).unwrap(),
     );
 
     res

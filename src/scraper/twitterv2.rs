@@ -16,7 +16,7 @@ use super::twitter::URL_REGEX;
 #[tracing::instrument(skip(config))]
 pub async fn twitter_v2_scrape(config: &Configuration, url: &Url) -> Result<Option<ScrapeResult>> {
     let auth = BearerToken::new(
-        &config
+        config
             .twitter_api_key_bearer
             .as_ref()
             .expect("must have configured v2 api key"),

@@ -124,7 +124,7 @@ pub async fn nitter_scrape(config: &Configuration, url: &Url) -> Result<Option<S
         source_url: Some(source_url),
         author_name: Some(author.to_string()),
         additional_tags: None,
-        description: Some(description.to_string()),
+        description: Some(description),
         images,
     })))
 }
