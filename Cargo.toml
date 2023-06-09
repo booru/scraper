@@ -9,7 +9,7 @@ publish = false
 [dependencies]
 axum-extra = { version = "0.3", features = ["typed-routing"] }
 axum = "0.5"
-moka = { version = "0.9", features = ["future"] }
+moka = { version = "0.11", features = ["future"] }
 anyhow = "1.0"
 better-panic = "0.3"
 camo-url = "0.1"
