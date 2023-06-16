@@ -43,7 +43,7 @@ twitter-v2 = { version = "0.1", default-features = false, features = ["rustls-tl
 [dev-dependencies]
 tokio-test = "0.4"
 rand = "0.8.5"
-test-log = "0.2.10"
+test-log = "0.2.12"
 env_logger = "*"
 
 [profile.release]
