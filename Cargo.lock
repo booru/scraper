@@ -1972,16 +1972,33 @@ dependencies = [
 ]
 
 [[package]]
-name = "reqwest-tracing"
-version = "0.3.1"
+name = "reqwest-middleware"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "64977f9a47fa7768cc88751e29026e569730ac1667c2eaeaac04b32624849fbe"
+checksum = "4531c89d50effe1fac90d095c8b133c20c5c714204feee0bfc3fd158e784209d"
 dependencies = [
+ "anyhow",
  "async-trait",
+ "http",
  "reqwest",
- "reqwest-middleware",
+ "serde",
  "task-local-extensions",
- "tokio",
+ "thiserror",
+]
+
+[[package]]
+name = "reqwest-tracing"
+version = "0.4.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1b97ad83c2fc18113346b7158d79732242002427c30f620fa817c1f32901e0a8"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "getrandom",
+ "matchit 0.7.0",
+ "reqwest",
+ "reqwest-middleware 0.2.2",
+ "task-local-extensions",
  "tracing",
 ]
 
@@ -2154,7 +2171,7 @@ dependencies = [
  "rand",
  "regex",
  "reqwest",
- "reqwest-middleware",
+ "reqwest-middleware 0.1.6",
  "reqwest-tracing",
  "securefmt",
  "sentry",
