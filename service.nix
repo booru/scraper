@@ -56,6 +56,8 @@ in
 
       after = [ "network-online.target" ];
       wantedBy = [ "multi-user.target" ];
+      
+      environment = cfg.env;
 
       serviceConfig = {
         Restart = "on-failure";
@@ -63,7 +65,6 @@ in
           "${lib.getBin cfg.package}/bin/scraper"
           "--listen-on ${toString cfg.port}"
         ];
-        Environment = cfg.env;
         EnvironmentFile = lib.mkIf (cfg.env-file != null) cfg.env-file;
         StateDirectory = "camoflage";
         StateDirectoryMode = "0750";
