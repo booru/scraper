@@ -45,7 +45,7 @@ in
         description = ''
           Env Variables to set
         '';
-      }
+      };
     };
   };
 
