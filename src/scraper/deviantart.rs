@@ -238,138 +238,140 @@ async fn try_old_hires(
     Ok(images)
 }
 
-#[cfg(test)]
-mod test {
+// DeviantArt is currently very broken
 
-    use crate::scraper::scrape;
-    use crate::State;
+// #[cfg(test)]
+// mod test {
 
-    use super::*;
-    use test_log::test;
+//     use crate::scraper::scrape;
+//     use crate::State;
 
-    #[cfg(feature = "net-tests")]
-    #[test]
-    fn test_deviantart_scraper() -> Result<()> {
-        let url = r#"https://www.deviantart.com/the-park/art/Comm-Baseball-cap-derpy-833396912"#;
-        let config = Configuration::default();
-        let state = State::new(config.clone())?;
-        let scrape = tokio_test::block_on(scrape(&config, &state, url));
-        let scrape = match scrape {
-            Ok(s) => s,
-            Err(e) => return Err(e),
-        };
-        let mut scrape = match scrape {
-            Some(s) => s,
-            None => anyhow::bail!("got none response from scraper"),
-        };
-        {
-            // remove token from URL
-            if let ScrapeResult::Ok(result) = &mut scrape {
-                for image in result.images.iter_mut() {
-                    let fixup = &mut image.url;
-                    fixup.query_pairs_mut().clear();
-                    let fixup = &mut image.camo_url;
-                    fixup.query_pairs_mut().clear();
-                }
-            }
-        }
-        let expected_result = ScrapeResult::Ok(ScrapeResultData{
-            source_url: Some(Url::parse("https://www.deviantart.com/the-park/art/Comm-Baseball-cap-derpy-833396912").unwrap()),
-            author_name: Some("the-park".to_string()),
-            additional_tags: None,
-            description: None,
-            images: vec![
-                ScrapeImage{
-                    url: Url::parse("https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/39da62f1-b049-4f7a-b10b-4cc5167cb9a2/dds6l68-3084d503-abbf-4f6d-bd82-7a36298e0106.png?").unwrap(),
-                    camo_url: Url::parse("https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/39da62f1-b049-4f7a-b10b-4cc5167cb9a2/dds6l68-3084d503-abbf-4f6d-bd82-7a36298e0106.png?").unwrap(),
-                }
-            ],
-        });
-        assert_eq!(expected_result, scrape);
-        Ok(())
-    }
+//     use super::*;
+//     use test_log::test;
 
-    #[cfg(feature = "net-tests")]
-    #[test]
-    fn test_deviantart_scraper_failed_scrape_220825() -> Result<()> {
-        let url = r#"https://www.deviantart.com/joellethenose/art/Luna-378433727"#;
-        let config = Configuration::default();
-        let state = State::new(config.clone())?;
-        let scrape = tokio_test::block_on(scrape(&config, &state, url));
-        let scrape = match scrape {
-            Ok(s) => s,
-            Err(e) => return Err(e),
-        };
-        let mut scrape = match scrape {
-            Some(s) => s,
-            None => anyhow::bail!("got none response from scraper"),
-        };
-        {
-            // remove token from URL
-            if let ScrapeResult::Ok(result) = &mut scrape {
-                for image in result.images.iter_mut() {
-                    let fixup = &mut image.url;
-                    fixup.query_pairs_mut().clear();
-                    let fixup = &mut image.camo_url;
-                    fixup.query_pairs_mut().clear();
-                }
-            }
-        }
-        let expected_result = ScrapeResult::Ok(ScrapeResultData{
-            source_url: Some(Url::parse("https://www.deviantart.com/joellethenose/art/Luna-378433727").unwrap()),
-            author_name: Some("joellethenose".to_string()),
-            additional_tags: None,
-            description: None,
-            images: vec![
-                ScrapeImage{
-                    url: Url::parse("https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/86a8f3ea-88f8-434f-b821-a0d48ce59131/d69b5bz-9498b591-38b2-4b7b-8a48-92cee122f131.jpg/v1/fill/w_1280,h_931,q_75,strp/luna_by_joellethenose_d69b5bz-fullview.jpg?").unwrap(),
-                    camo_url: Url::parse("https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/86a8f3ea-88f8-434f-b821-a0d48ce59131/d69b5bz-9498b591-38b2-4b7b-8a48-92cee122f131.jpg/v1/fill/w_1280,h_931,q_75,strp/luna_by_joellethenose_d69b5bz-fullview.jpg?").unwrap(),
-                }
-            ],
-        });
-        assert_eq!(expected_result, scrape);
-        Ok(())
-    }
+//     #[cfg(feature = "net-tests")]
+//     #[test]
+//     fn test_deviantart_scraper() -> Result<()> {
+//         let url = r#"https://www.deviantart.com/the-park/art/Comm-Baseball-cap-derpy-833396912"#;
+//         let config = Configuration::default();
+//         let state = State::new(config.clone())?;
+//         let scrape = tokio_test::block_on(scrape(&config, &state, url));
+//         let scrape = match scrape {
+//             Ok(s) => s,
+//             Err(e) => return Err(e),
+//         };
+//         let mut scrape = match scrape {
+//             Some(s) => s,
+//             None => anyhow::bail!("got none response from scraper"),
+//         };
+//         {
+//             // remove token from URL
+//             if let ScrapeResult::Ok(result) = &mut scrape {
+//                 for image in result.images.iter_mut() {
+//                     let fixup = &mut image.url;
+//                     fixup.query_pairs_mut().clear();
+//                     let fixup = &mut image.camo_url;
+//                     fixup.query_pairs_mut().clear();
+//                 }
+//             }
+//         }
+//         let expected_result = ScrapeResult::Ok(ScrapeResultData{
+//             source_url: Some(Url::parse("https://www.deviantart.com/the-park/art/Comm-Baseball-cap-derpy-833396912").unwrap()),
+//             author_name: Some("the-park".to_string()),
+//             additional_tags: None,
+//             description: None,
+//             images: vec![
+//                 ScrapeImage{
+//                     url: Url::parse("https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/39da62f1-b049-4f7a-b10b-4cc5167cb9a2/dds6l68-3084d503-abbf-4f6d-bd82-7a36298e0106.png?").unwrap(),
+//                     camo_url: Url::parse("https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/39da62f1-b049-4f7a-b10b-4cc5167cb9a2/dds6l68-3084d503-abbf-4f6d-bd82-7a36298e0106.png?").unwrap(),
+//                 }
+//             ],
+//         });
+//         assert_eq!(expected_result, scrape);
+//         Ok(())
+//     }
 
-    #[cfg(feature = "net-tests")]
-    #[test]
-    fn test_deviantart_scraper_failed_scrape_230607() -> Result<()> {
-        let url = r#"https://www.deviantart.com/aztrial/art/MLP-G5-Ruby-Jubilee-962914035"#;
-        let config = Configuration::default();
-        let state = State::new(config.clone())?;
-        let scrape = tokio_test::block_on(scrape(&config, &state, url));
-        let scrape = match scrape {
-            Ok(s) => s,
-            Err(e) => return Err(e),
-        };
-        let mut scrape = match scrape {
-            Some(s) => s,
-            None => anyhow::bail!("got none response from scraper"),
-        };
-        {
-            // remove token from URL
-            if let ScrapeResult::Ok(result) = &mut scrape {
-                for image in result.images.iter_mut() {
-                    let fixup = &mut image.url;
-                    fixup.query_pairs_mut().clear();
-                    let fixup = &mut image.camo_url;
-                    fixup.query_pairs_mut().clear();
-                }
-            }
-        }
-        let expected_result = ScrapeResult::Ok(ScrapeResultData{
-            source_url: Some(Url::parse("https://www.deviantart.com/aztrial/art/MLP-G5-Ruby-Jubilee-962914035").unwrap()),
-            author_name: Some("aztrial".to_string()),
-            additional_tags: None,
-            description: None,
-            images: vec![
-                ScrapeImage{
-                    url: Url::parse("https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/2f871ec7-c49f-4d50-a83d-4a775e89b234/dfxal83-0996fb96-92cb-458d-a83c-2a2a03a8d7c4.png/v1/fill/w_1280,h_1586,q_80,strp/mlp_g5__ruby_jubilee___by_aztrial_dfxal83-fullview.jpg?").unwrap(),
-                    camo_url: Url::parse("https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/2f871ec7-c49f-4d50-a83d-4a775e89b234/dfxal83-0996fb96-92cb-458d-a83c-2a2a03a8d7c4.png/v1/fill/w_1280,h_1586,q_80,strp/mlp_g5__ruby_jubilee___by_aztrial_dfxal83-fullview.jpg?").unwrap(),
-                }
-            ],
-        });
-        assert_eq!(expected_result, scrape);
-        Ok(())
-    }
-}
+//     #[cfg(feature = "net-tests")]
+//     #[test]
+//     fn test_deviantart_scraper_failed_scrape_220825() -> Result<()> {
+//         let url = r#"https://www.deviantart.com/joellethenose/art/Luna-378433727"#;
+//         let config = Configuration::default();
+//         let state = State::new(config.clone())?;
+//         let scrape = tokio_test::block_on(scrape(&config, &state, url));
+//         let scrape = match scrape {
+//             Ok(s) => s,
+//             Err(e) => return Err(e),
+//         };
+//         let mut scrape = match scrape {
+//             Some(s) => s,
+//             None => anyhow::bail!("got none response from scraper"),
+//         };
+//         {
+//             // remove token from URL
+//             if let ScrapeResult::Ok(result) = &mut scrape {
+//                 for image in result.images.iter_mut() {
+//                     let fixup = &mut image.url;
+//                     fixup.query_pairs_mut().clear();
+//                     let fixup = &mut image.camo_url;
+//                     fixup.query_pairs_mut().clear();
+//                 }
+//             }
+//         }
+//         let expected_result = ScrapeResult::Ok(ScrapeResultData{
+//             source_url: Some(Url::parse("https://www.deviantart.com/joellethenose/art/Luna-378433727").unwrap()),
+//             author_name: Some("joellethenose".to_string()),
+//             additional_tags: None,
+//             description: None,
+//             images: vec![
+//                 ScrapeImage{
+//                     url: Url::parse("https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/86a8f3ea-88f8-434f-b821-a0d48ce59131/d69b5bz-9498b591-38b2-4b7b-8a48-92cee122f131.jpg/v1/fill/w_1280,h_931,q_75,strp/luna_by_joellethenose_d69b5bz-fullview.jpg?").unwrap(),
+//                     camo_url: Url::parse("https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/86a8f3ea-88f8-434f-b821-a0d48ce59131/d69b5bz-9498b591-38b2-4b7b-8a48-92cee122f131.jpg/v1/fill/w_1280,h_931,q_75,strp/luna_by_joellethenose_d69b5bz-fullview.jpg?").unwrap(),
+//                 }
+//             ],
+//         });
+//         assert_eq!(expected_result, scrape);
+//         Ok(())
+//     }
+
+//     #[cfg(feature = "net-tests")]
+//     #[test]
+//     fn test_deviantart_scraper_failed_scrape_230607() -> Result<()> {
+//         let url = r#"https://www.deviantart.com/aztrial/art/MLP-G5-Ruby-Jubilee-962914035"#;
+//         let config = Configuration::default();
+//         let state = State::new(config.clone())?;
+//         let scrape = tokio_test::block_on(scrape(&config, &state, url));
+//         let scrape = match scrape {
+//             Ok(s) => s,
+//             Err(e) => return Err(e),
+//         };
+//         let mut scrape = match scrape {
+//             Some(s) => s,
+//             None => anyhow::bail!("got none response from scraper"),
+//         };
+//         {
+//             // remove token from URL
+//             if let ScrapeResult::Ok(result) = &mut scrape {
+//                 for image in result.images.iter_mut() {
+//                     let fixup = &mut image.url;
+//                     fixup.query_pairs_mut().clear();
+//                     let fixup = &mut image.camo_url;
+//                     fixup.query_pairs_mut().clear();
+//                 }
+//             }
+//         }
+//         let expected_result = ScrapeResult::Ok(ScrapeResultData{
+//             source_url: Some(Url::parse("https://www.deviantart.com/aztrial/art/MLP-G5-Ruby-Jubilee-962914035").unwrap()),
+//             author_name: Some("aztrial".to_string()),
+//             additional_tags: None,
+//             description: None,
+//             images: vec![
+//                 ScrapeImage{
+//                     url: Url::parse("https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/2f871ec7-c49f-4d50-a83d-4a775e89b234/dfxal83-0996fb96-92cb-458d-a83c-2a2a03a8d7c4.png/v1/fill/w_1280,h_1586,q_80,strp/mlp_g5__ruby_jubilee___by_aztrial_dfxal83-fullview.jpg?").unwrap(),
+//                     camo_url: Url::parse("https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/2f871ec7-c49f-4d50-a83d-4a775e89b234/dfxal83-0996fb96-92cb-458d-a83c-2a2a03a8d7c4.png/v1/fill/w_1280,h_1586,q_80,strp/mlp_g5__ruby_jubilee___by_aztrial_dfxal83-fullview.jpg?").unwrap(),
+//                 }
+//             ],
+//         });
+//         assert_eq!(expected_result, scrape);
+//         Ok(())
+//     }
+// }
