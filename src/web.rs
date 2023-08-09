@@ -8,7 +8,7 @@ use axum::{
     http::{self, Request},
     middleware::Next,
     response::{self, IntoResponse},
-    Extension, Json,
+    Json,
 };
 use std::sync::Arc;
 use tokio::time::Instant;
@@ -64,8 +64,8 @@ pub async fn origin_check<B>(
 
 #[tracing::instrument(skip(state))]
 pub async fn scrape_post(
+    axum::extract::State(state): axum::extract::State<Arc<State>>,
     Json(scrape_req): Json<ScrapeRequest>,
-    Extension(state): Extension<Arc<State>>,
 ) -> response::Response<String> {
     match scrape_inner(
         &state.config,
@@ -82,8 +82,8 @@ pub async fn scrape_post(
 
 #[tracing::instrument(skip(state))]
 pub async fn scrape(
+    axum::extract::State(state): axum::extract::State<Arc<State>>,
     Query(scrape_req): Query<ScrapeRequest>,
-    Extension(state): Extension<Arc<State>>,
 ) -> response::Response<String> {
     match scrape_inner(
         &state.config,

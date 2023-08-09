@@ -23,7 +23,7 @@ Available Scrapers are:
 | Service     | Status      | Notes                                                                         |
 |-------------|-------------|-------------------------------------------------------------------------------|
 | DeviantArt  | Beta        | Does not work for images flagged as mature                                    |
-| Twitter     | Production  | Requires regular adjustment but works otherwise                               |
+| Twitter     | Unsupported | Due to API requirements, the Twitter scraper is becoming hard to support      |
 | Nitter      | Production  | Only supports officially listed instances                                     |
 | Tumblr      | Production  | Missing Text-Post Scraping                                                    |
 | Raw         | Production  | Valid for gif, jpeg, png, svg, webm                                           |

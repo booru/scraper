@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use anyhow::Result;
-use axum::{routing::get, Extension};
+use axum::routing::get;
 use envconfig::Envconfig;
 use tracing::{info, trace, Level};
 
@@ -207,11 +207,11 @@ async fn main_start() -> Result<()> {
         sentry::init((url.to_string(), opts))
     });
     let state = Arc::new(State::new(config.clone())?);
+    let astate = state.clone();
     let app = axum::Router::new()
         .route("/images/scrape", get(web::scrape).post(web::scrape_post))
-        .layer(Extension(state.clone()))
         .layer(axum::middleware::from_fn(move |a, b| {
-            let state = state.clone();
+            let state = astate.clone();
             web::origin_check(a, state, b)
         }))
         .layer(axum::middleware::from_fn(web::latency));
@@ -222,7 +222,7 @@ async fn main_start() -> Result<()> {
             .layer(sentry_tower::SentryHttpLayer::with_transaction()),
     };
     axum::Server::bind(&config.bind_to)
-        .serve(app.into_make_service())
+        .serve(app.with_state(state).into_make_service())
         .await
         .unwrap();
     // close sentry
