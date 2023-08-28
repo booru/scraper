@@ -360,7 +360,7 @@ dependencies = [
  "hex",
  "hmac 0.10.1",
  "securefmt",
- "url 2.4.0",
+ "url 2.4.1",
 ]
 
 [[package]]
@@ -472,7 +472,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "time",
- "url 2.4.0",
+ "url 2.4.1",
 ]
 
 [[package]]
@@ -1596,7 +1596,7 @@ dependencies = [
  "serde_path_to_error",
  "sha2 0.10.7",
  "thiserror",
- "url 2.4.0",
+ "url 2.4.1",
 ]
 
 [[package]]
@@ -1946,7 +1946,7 @@ dependencies = [
  "tokio-socks",
  "tokio-util",
  "tower-service",
- "url 2.4.0",
+ "url 2.4.1",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "wasm-streams",
@@ -2179,7 +2179,7 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "twitter-v2",
- "url 2.4.0",
+ "url 2.4.1",
  "url_serde",
  "visdom",
 ]
@@ -2321,7 +2321,7 @@ dependencies = [
  "sentry-core",
  "tower-layer",
  "tower-service",
- "url 2.4.0",
+ "url 2.4.1",
 ]
 
 [[package]]
@@ -2349,7 +2349,7 @@ dependencies = [
  "serde_json",
  "thiserror",
  "time",
- "url 2.4.0",
+ "url 2.4.1",
  "uuid",
 ]
 
@@ -2956,7 +2956,7 @@ dependencies = [
  "thiserror",
  "time",
  "tokio",
- "url 2.4.0",
+ "url 2.4.1",
 ]
 
 [[package]]
@@ -3030,7 +3030,7 @@ dependencies = [
  "once_cell",
  "rustls",
  "rustls-webpki 0.100.2",
- "url 2.4.0",
+ "url 2.4.1",
  "webpki-roots 0.23.1",
 ]
 
@@ -3047,9 +3047,9 @@ dependencies = [
 
 [[package]]
 name = "url"
-version = "2.4.0"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "50bff7831e19200a85b17131d085c25d7811bc4e186efdaf54bbd132994a88cb"
+checksum = "143b538f18257fac9cad154828a57c6bf5157e1aa604d4816b5995bf6de87ae5"
 dependencies = [
  "form_urlencoded",
  "idna 0.4.0",
