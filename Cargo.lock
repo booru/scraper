@@ -2312,9 +2312,9 @@ dependencies = [
 
 [[package]]
 name = "sentry-tower"
-version = "0.31.5"
+version = "0.31.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "01c59d3325570b637cc844fef4e7cd9b3f997ffe4e5e83d5ccb85759c9df3bf2"
+checksum = "741d92bd16765986e0cc58faa66abd24a94e6c84e4b550837173c5b3087a6e1c"
 dependencies = [
  "http",
  "pin-project",
