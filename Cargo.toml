@@ -38,7 +38,7 @@ tracing-subscriber = "0.3"
 twitter-v2 = { version = "0.1", default-features = false, features = ["rustls-tls"] }
 url = { version = "2.4", features = ["serde"] }
 url_serde = "0.2"
-visdom = "0.5"
+visdom = "1.0"
 
 [dev-dependencies]
 tokio-test = "0.4"
