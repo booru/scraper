@@ -2164,9 +2164,9 @@ dependencies = [
 
 [[package]]
 name = "sentry-core"
-version = "0.31.7"
+version = "0.31.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8f51264e4013ed9b16558cce43917b983fa38170de2ca480349ceb57d71d6053"
+checksum = "901f761681f97db3db836ef9e094acdd8756c40215326c194201941947164ef1"
 dependencies = [
  "once_cell",
  "rand",
@@ -2198,9 +2198,9 @@ dependencies = [
 
 [[package]]
 name = "sentry-tower"
-version = "0.31.7"
+version = "0.31.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ffe3ab7bf7f65c9f8ccd20aa136ce5b2140aa6d6a11339e823cd43a7d694a9e"
+checksum = "88e782e369edac4adfc5bf528b27577270bc3e7023c388ebad9db08e1d56b30b"
 dependencies = [
  "http",
  "pin-project",
@@ -2224,9 +2224,9 @@ dependencies = [
 
 [[package]]
 name = "sentry-types"
-version = "0.31.7"
+version = "0.31.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0e663b3eb62ddfc023c9cf5432daf5f1a4f6acb1df4d78dd80b740b32dd1a740"
+checksum = "da956cca56e0101998c8688bc65ce1a96f00673a0e58e663664023d4c7911e82"
 dependencies = [
  "debugid",
  "hex",
