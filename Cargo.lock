@@ -159,7 +159,7 @@ dependencies = [
  "matchit",
  "memchr",
  "mime",
- "percent-encoding 2.3.0",
+ "percent-encoding 2.3.1",
  "pin-project-lite",
  "rustversion",
  "serde",

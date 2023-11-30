@@ -1,0 +1,50 @@
+name: Update Nixpkgs
+
+on:
+  schedule:
+    - cron: '30 5 * * 0'
+  workflow_dispatch: {}
+
+jobs:
+  nixpkgs:
+    runs-on: ubuntu-22.04
+    permissions:
+      pull-requests: write
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+      - uses: DeterminateSystems/nix-installer-action@main
+      - name: Create Project Input Updates
+        run: nix flake lock --update-input nixpkgs
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          delete-branch: true
+          branch: create-pull-request/patch/nixpkgs
+          title: 'Update Flake-Input "nixpkgs"'
+          commit-message: 'updating nix-flake input "nixpkgs"'
+          author: 'GitHub <noreply@github.com>'
+          committer: 'GitHub <noreply@github.com>'
+          add-paths: |
+            flake.lock
+  fenix:
+    runs-on: ubuntu-22.04
+    permissions:
+      pull-requests: write
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+      - uses: DeterminateSystems/nix-installer-action@main
+      - name: Create Project Input Updates
+        run: nix flake lock --update-input fenix
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          delete-branch: true
+          branch: create-pull-request/patch/fenix
+          title: 'Update Flake-Input "fenix"'
+          commit-message: 'updating nix-flake input "fenix"'
+          author: 'GitHub <noreply@github.com>'
+          committer: 'GitHub <noreply@github.com>'
+          add-paths: |
+            flake.lock

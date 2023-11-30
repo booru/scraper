@@ -5,7 +5,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     flake-utils.url = "github:numtide/flake-utils";
-    nixpkgs.url = "nixpkgs/nixos-unstable";
+    nixpkgs.url = "nixpkgs/nixos-23.11";
   };
 
   outputs = { self, fenix, flake-utils, nixpkgs }:
@@ -14,14 +14,18 @@
       toolchain = fenix.packages.${system}.stable.toolchain;
       pkgs = nixpkgs.legacyPackages.${system};
     in
-    {
+    rec {
       devShells.default = pkgs.mkShell {
         nativeBuildInputs =
             [
               pkgs.cargo-nextest
               fenix.packages.${system}.stable.toolchain
               pkgs.openssl
-            ];
+              pkgs.iconv
+              pkgs.pkg-config
+            ] ++ (if system == "aarch64-darwin" then [
+              pkgs.darwin.apple_sdk.frameworks.SystemConfiguration
+            ] else []);
       };
 
       nixosModules = rec {
@@ -45,7 +49,11 @@
 
           cargoLock.lockFile = ./Cargo.lock;
 
-          buildInputs = [ pkgs.openssl ];
+          buildInputs = [
+            pkgs.openssl pkgs.iconv pkgs.pkg-config 
+          ] ++ (if system == "aarch64-darwin" then [
+            pkgs.darwin.apple_sdk.frameworks.SystemConfiguration
+          ] else []);
 
           # disable networked tests
           checkNoDefaultFeatures = true;
@@ -53,5 +61,6 @@
 
           useNextest = true;
         };
+      checks.default = packages.default;
     });
 }

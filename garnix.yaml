@@ -1,0 +1,7 @@
+builds:
+ include:
+ - '*.x86_64-linux.*'
+ - 'packages.aarch64-darwin.*'
+ - 'packages.aarch64-linux.*'
+ - 'defaultPackage.x86_64-linux'
+ - 'devShell.*'
