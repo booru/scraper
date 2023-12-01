@@ -23,6 +23,7 @@
               pkgs.openssl
               pkgs.iconv
               pkgs.pkg-config
+              pkgs.cargo-outdated
             ] ++ (if system == "aarch64-darwin" then [
               pkgs.darwin.apple_sdk.frameworks.SystemConfiguration
             ] else []);

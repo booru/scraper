@@ -221,10 +221,11 @@ async fn main_start() -> Result<()> {
             .layer(sentry_tower::NewSentryLayer::new_from_top())
             .layer(sentry_tower::SentryHttpLayer::with_transaction()),
     };
-    axum::Server::bind(&config.bind_to)
-        .serve(app.with_state(state).into_make_service())
+    let app = app.with_state(state).into_make_service();
+    let listener = tokio::net::TcpListener::bind(&config.bind_to)
         .await
         .unwrap();
+    axum::serve(listener, app).await.unwrap();
     // close sentry
     if let Some(s) = _sentry.as_ref() {
         s.flush(Some(std::time::Duration::from_millis(5000)));

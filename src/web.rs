@@ -23,7 +23,7 @@ pub struct ScrapeRequest {
 
 #[allow(clippy::let_with_type_underscore)]
 #[tracing::instrument(skip(req, next))]
-pub async fn latency<B>(req: Request<B>, next: Next<B>) -> impl IntoResponse {
+pub async fn latency(req: Request<axum::body::Body>, next: Next) -> impl IntoResponse {
     let uri = req.uri().clone();
     debug!("Incoming Request {}", uri);
     let start = Instant::now();
@@ -44,10 +44,10 @@ pub async fn latency<B>(req: Request<B>, next: Next<B>) -> impl IntoResponse {
 }
 
 #[tracing::instrument(skip(req, state, next))]
-pub async fn origin_check<B>(
-    req: Request<B>,
+pub async fn origin_check(
+    req: Request<axum::body::Body>,
     state: Arc<State>,
-    next: Next<B>,
+    next: Next,
 ) -> std::result::Result<impl response::IntoResponse, http::StatusCode> {
     let origin = req.headers().get("Origin").map(|x| x.to_str()).transpose();
     match origin {
