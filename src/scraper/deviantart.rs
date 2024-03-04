@@ -152,7 +152,6 @@ async fn try_intermediary_hires(
             .status()
             == 200
         {
-            let built_url = built_url;
             images.push(ScrapeImage {
                 url: built_url,
                 camo_url: image.camo_url,
