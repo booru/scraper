@@ -158,7 +158,7 @@ mod test {
             (
                 r#"https://derpibooru.org/images/1"#,
                 ScrapeResultData {
-                    source_url: Some(Url::parse("https://www.deviantart.com/speccysy/art/Afternoon-Flight-215193985").unwrap()),
+                    source_url: Some(Url::parse("https://web.archive.org/web/20110702164313/http://speccysy.deviantart.com:80/art/Afternoon-Flight-215193985").unwrap()),
                     author_name: Some("speccysy".to_string()),
                     additional_tags: Some(vec![]),
                     description: None,
