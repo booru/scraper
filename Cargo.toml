@@ -32,7 +32,7 @@ sentry = { version = "0.32", default-features = false, features = ["backtrace", 
 sentry-tower = { version = "0.34", features = ["http"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-tokio = { version = "1.37", features = ["full"] }
+tokio = { version = "1.38", features = ["full"] }
 tracing = "0.1"
 tracing-subscriber = "0.3"
 twitter-v2 = { version = "0.1", default-features = false, features = ["rustls-tls"] }
