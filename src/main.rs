@@ -233,3 +233,9 @@ async fn main_start() -> Result<()> {
     drop(_sentry);
     Ok(())
 }
+
+#[cfg(test)]
+mod test {
+  #[test]
+  fn test_dummy() {}
+}

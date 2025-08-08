@@ -5,7 +5,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     flake-utils.url = "github:numtide/flake-utils";
-    nixpkgs.url = "nixpkgs/nixos-23.11";
+    nixpkgs.url = "nixpkgs/nixos-25.05";
   };
 
   outputs = { self, fenix, flake-utils, nixpkgs }:
@@ -60,7 +60,7 @@
           checkNoDefaultFeatures = true;
           checkFeatures = [ ];
 
-          useNextest = true;
+          #useNextest = true;
         };
       checks.default = packages.default;
     });

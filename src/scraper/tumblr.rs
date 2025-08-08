@@ -54,7 +54,7 @@ async fn tumblr_domain(dns_cache: TumblrDnsCache, host: url::Host<&str>) -> Resu
             let host = host.clone();
             let hosts =
                 tokio::task::spawn_blocking(move || dns_lookup::lookup_host(&host)).await??;
-            trace!("got hosts for URL: {:?}", hosts);
+            //trace!("got hosts for URL: {:?}", hosts);
             for host in hosts {
                 if TUMBLR_RANGES.iter().any(|net| net.contains(&host)) {
                     return Ok(true);
